@@ -51,8 +51,6 @@ export class VideoRecorder implements IAnyRecorder {
         private tracker: VideoEventTrackerService,
         private defaultDevice?: MediaDeviceInfo
     ) {
-        const lang = conf().Platform.idiom;
-        this.title = lang.translate('recorder.filename') + L10n.moment().format('DD/MM/YYYY');
         defaultDevice && this.setCamera( defaultDevice.deviceId );
     }
 
@@ -118,6 +116,7 @@ export class VideoRecorder implements IAnyRecorder {
 
     flush():void {
         this.stopStreaming();
+        this.title = "";
     }
 
     save():void {
@@ -368,6 +367,10 @@ export class VideoRecorder implements IAnyRecorder {
     async record() {
         await this.startStreaming();
         if (!this.stream) return;
+        const lang = conf().Platform.idiom;
+        if(!this.title){
+            this.title = lang.translate('recorder.filename') + L10n.moment().format('DD/MM/YYYY');
+        }
         this.prepareRecord();
         this.recorded = new Array();
         const options = { mimeType: this.findBestSupportedMimeType() };

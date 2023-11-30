@@ -79,6 +79,9 @@ export class Controller implements IController {
     disabledButtons:boolean = true;
     displaySavedMessage:boolean = false;
     selectedRecorder:string = "none";
+    recordIsSaved:boolean = false;
+
+
 
     /** Max video recording duration, in ms. */
     get recordMaxTime():number {
@@ -101,6 +104,7 @@ export class Controller implements IController {
         this.setRecorder( "audio" );
         if( this.isRecording ) {
             this.disabledButtons = false;
+            this.recordIsSaved= false;
             this.recorder?.suspend();
         } else {
             this.recorder?.record();
@@ -182,6 +186,7 @@ export class Controller implements IController {
 
     saveRecord() {
         this.recorder?.save();
+        this.recordIsSaved= true;
     };
 
     redo() {
@@ -221,6 +226,7 @@ export class Controller implements IController {
     
     clean() {
         this.displaySavedMessage = false;
+        this.recordIsSaved= false;
         this.disabledButtons = true;
         this.recorder?.flush(); // Revert to idle state
         this.selectedRecorder = "none";

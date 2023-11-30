@@ -1,12 +1,8 @@
-import { ConfigurationFrameworkFactory, ExplorerFrameworkFactory, NotifyFrameworkFactory, SessionFrameworkFactory, TransportFrameworkFactory } from "ode-ts-client";
+import { ConfigurationFrameworkFactory, NotifyFrameworkFactory, SessionFrameworkFactory, TransportFrameworkFactory } from "ode-ts-client";
 
 /** Short for accessing to the global ConfigurationFramework.  */
 export function conf() {
     return ConfigurationFrameworkFactory.instance();
-}
-/** Short for accessing to the global ExplorerFramework.  */
-export function explore() {
-    return ExplorerFrameworkFactory.instance();
 }
 /** Short for accessing to the global NotifyFramework.  */
 export function notif() {

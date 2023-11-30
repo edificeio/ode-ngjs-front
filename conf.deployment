@@ -1,6 +1,0 @@
-{
-  "name":"com.opendigitaleducation~%MODNAME%~%VERSION%",
-  "type": "js",
-  "waitDeploy": true
-  ,"extension":"-tar.tar.gz"
-}

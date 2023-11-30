@@ -1,15 +1,18 @@
 version: "3"
 services:
   maven:
-    image: maven:3.5-jdk-8-slim
+    image: "maven:3.5-jdk-8-slim"
     volumes:
       - ./:/usr/src
       - ~/.m2:/var/maven/.m2
+
   node:
-    image: opendigitaleducation/node:16-alpine-pnpm
-    working_dir: /home/node/app
+    image: "opendigitaleducation/node:16-alpine-pnpm"
     user: "node"
+    working_dir: /home/node/app
     network_mode: host
     volumes:
       - ./:/home/node/app
+      - ~/.pnpm:/.pnpm
       - ~/.npm:/.npm
+      - ~/.cache:/.cache

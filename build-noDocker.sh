@@ -11,6 +11,10 @@ if [ "$#" -lt 1 ]; then
   exit 1
 fi
 
+MVN_MOD_GROUPID=`grep 'modowner=' gradle.properties | sed 's/modowner=//'`
+MVN_MOD_NAME=`grep 'modname=' gradle.properties | sed 's/modname=//'`
+MVN_MOD_VERSION=`grep 'version=' gradle.properties | sed 's/version=//'`
+
 if [ ! -e node_modules ]
 then
   mkdir node_modules
@@ -20,6 +24,14 @@ if [ -z ${USER_UID:+x} ]
 then
   export USER_UID=1000
   export GROUP_GID=1000
+fi
+
+if [ -e "?/.gradle" ] && [ ! -e "?/.gradle/gradle.properties" ]
+then
+  echo "odeUsername=$NEXUS_ODE_USERNAME" > "?/.gradle/gradle.properties"
+  echo "odePassword=$NEXUS_ODE_PASSWORD" >> "?/.gradle/gradle.properties"
+  echo "sonatypeUsername=$NEXUS_SONATYPE_USERNAME" >> "?/.gradle/gradle.properties"
+  echo "sonatypePassword=$NEXUS_SONATYPE_PASSWORD" >> "?/.gradle/gradle.properties"
 fi
 
 # options
@@ -55,12 +67,18 @@ init () {
     BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
   fi
 
+  echo "[init] Generate deployment file from conf.deployment..."
+  mkdir -p deployment/$MVN_MOD_NAME
+  cp conf.deployment deployment/$MVN_MOD_NAME/conf.json.template
+  sed -i "s/%MODNAME%/${MVN_MOD_NAME}/" deployment/$MVN_MOD_NAME/conf.json.template
+  sed -i "s/%VERSION%/${MVN_MOD_VERSION}/" deployment/$MVN_MOD_NAME/conf.json.template
+
   echo "[init] Generate package.json from package.json.template..."
   NPM_VERSION_SUFFIX=`date +"%Y%m%d%H%M"`
   cp package.json.template package.json
   sed -i "s/%generateVersion%/${NPM_VERSION_SUFFIX}/" package.json
 
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install --production=false"
+  yarn install --production=false
 }
 
 # Install local dependencies as tarball (installing as folder creates symlinks which won't resolve in the docker container)
@@ -76,14 +94,15 @@ localDep () {
 }
 
 build () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm run build"
+  yarn build
   status=$?
   if [ $status != 0 ];
   then
     exit $status
   fi
 
-  echo "ode-ngjs-front `date +'%d/%m/%Y %H:%M:%S'`" >> dist/version.txt
+  VERSION=`grep "version="  gradle.properties| sed 's/version=//g'`
+  echo "ode-ngjs-front=$VERSION `date +'%d/%m/%Y %H:%M:%S'`" >> dist/version.txt
 }
 
 watch () {

@@ -8,3 +8,4 @@ deployment/
 lib
 build/
 npm-debug.log
+.idea

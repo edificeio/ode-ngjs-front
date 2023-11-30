@@ -1,6 +1,6 @@
 import { IAttributes, IController, IDirective, IScope } from "angular";
 import { App, USER_PREFS } from "ode-ts-client";
-import { L10n, conf, notif } from "../../../utils"; 
+import {L10n, conf, notif, http, session} from "../../../utils";
 import { TrackingService } from "../../../services";
 
 interface PortalScope extends IScope {
@@ -10,6 +10,9 @@ interface PortalScope extends IScope {
 	goToMyAccount: () => void;
 	closeBanner: () => void;
 	showRgpd?: Boolean;
+	me?:{
+		hasWorkflow(right:string):boolean;
+	};
 }
 
 /* Directive */
@@ -40,6 +43,12 @@ class Directive implements IDirective<PortalScope,JQLite,IAttributes,IController
 			preferences.save(USER_PREFS.RGPD_COOKIES);
 		}
 
+		scope.me = {
+			hasWorkflow(right:string):boolean {
+				return session().hasWorkflow(right);
+			}
+		};
+
 		scope.closeBanner = () => {
 			scope.showRgpd = false;
 			preferences.get(USER_PREFS.RGPD_COOKIES)['showInfoTip'] = false;
@@ -50,11 +59,15 @@ class Directive implements IDirective<PortalScope,JQLite,IAttributes,IController
 		if( scope.app ) {
 			this.tracking.trackApp( scope.app );
 		}
+
+
+		if (scope.me?.hasWorkflow('fr.openent.chatbot.controller.ChatbotController|view')) {
+			$.ajax('/chatbot/public/js/chatbot.js', {dataType: 'script',});
+		}
+
+
 	}
-	
-	constructor( 
-		private tracking:TrackingService 
-		) {}
+	constructor(private tracking:TrackingService) {}
 
 }
 
