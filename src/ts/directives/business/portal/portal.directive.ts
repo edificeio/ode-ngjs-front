@@ -64,6 +64,22 @@ class Directive implements IDirective<PortalScope,JQLite,IAttributes,IController
 		if (scope.me?.hasWorkflow('fr.openent.chatbot.controller.ChatbotController|view')) {
 			$.ajax('/chatbot/public/js/chatbot.js', {dataType: 'script',});
 		}
+		
+		// Load the optional feature cantoo
+        // Verification of the workflow rights
+        if(scope.me?.hasWorkflow('org.entcore.portal.controllers.PortalController|optionalFeatureCantoo')) {
+			
+			// Get the scriptPath of the script to load
+			http().get("/optionalFeature/cantoo").then((data) => {
+				
+				const script = document.createElement("script");
+				script.src = data.scriptPath;
+				script.async = true;
+				
+				// Load the script and append it to the body
+				document.body.appendChild(script);
+			});
+		}
 
 
 	}
