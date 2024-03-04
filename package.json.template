@@ -1,6 +1,6 @@
 {
   "name": "ode-ngjs-front",
-  "version": "1.4.2",
+  "version": "1.4.2-dev.%generateVersion%",
   "description": "Open Digital Education Frontend Framework",
   "main": "dist/ts/index.js",
   "types": "dist/ts/index.d.ts",
@@ -51,7 +51,7 @@
     "karma-chrome-launcher": "3.1.0",
     "karma-jasmine": "4.0.1",
     "moment-locales-webpack-plugin": "~1.2.0",
-    "ode-ts-client": "1.2.1",
+    "ode-ts-client": "dev",
     "terser-webpack-plugin": "5.1.4",
     "ts-loader": "8.0.18",
     "typescript": "4.2.2",
