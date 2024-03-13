@@ -81,6 +81,104 @@ class Directive implements IDirective<PortalScope,JQLite,IAttributes,IController
 			});
 		}
 
+		// Add the Zendesk widget
+		this.addZendeskGuideWedget(scope);
+	}
+
+	private addZendeskGuideWedget(scope: PortalScope) {
+		http().get("/zendeskGuide/config?module=timeline").then((data) => {
+
+			// Add the Zendesk widget script if the key is present
+			if (data && data.key) {
+				const scriptZendesk = document.createElement('script');
+				scriptZendesk.id = 'ze-snippet';
+				scriptZendesk.src = `https://static.zdassets.com/ekr/snippet.js?key=${data.key}`;
+
+				document.body.appendChild(scriptZendesk).onload = () => {
+
+					// Set the language of the widget
+					if (session().currentLanguage === 'es') {
+						(window as any).zE(function () {
+							(window as any).zE.setLocale('es-419');
+						});
+					} else {
+						(window as any).zE(function () {
+							(window as any).zE.setLocale('fr');
+						});
+					}
+					// Set the default label of the widget
+					if (data.module.default) {
+						(window as any).zE('webWidget', 'helpCenter:setSuggestions', { labels: [data.module.default] });
+					}
+
+					// Set the widget settings color, launcher visibility and support button visibility
+					(window as any).zE('webWidget', 'updateSettings', {
+						webWidget: {
+							color: { theme: data.color || '#ffc400' },
+							zIndex: 22,
+							launcher: {
+								mobile: {
+									labelVisible: true
+								}
+							},
+							contactForm: {
+								suppress: !scope.me?.hasWorkflow('net.atos.entng.support.controllers.DisplayController|view')
+							},
+							helpCenter: {
+								messageButton: {
+									"*": "Assistance ENT",
+									"es-419": "Asistencia ENT"
+								}
+							}
+						},
+					});
+
+					// Hide the launcher label when the user scrolls on the mobile
+					window.addEventListener('scroll', () => {
+						(window as any).zE('webWidget', 'updateSettings', {
+							webWidget: {
+								launcher: {
+									mobile: {
+										labelVisible: window.scrollY <= 5
+									}
+								},
+							},
+						});
+					});
+
+					// Redispatch the support button if the user has the right to access the support page
+					(window as any).zE('webWidget:on', 'open', function () {
+						if (scope.me?.hasWorkflow('net.atos.entng.support.controllers.DisplayController|view')) {
+							(window as any).zE('webWidget', 'updateSettings', {
+								webWidget: {
+									contactForm: {
+										suppress: false
+									}
+								}
+							});
+						}
+					});
+
+					// Redirect the user to the support page if he has the right to access it and suppress the contact form
+					(window as any).zE('webWidget:on', 'userEvent', function (ref: { category: any; action: any; properties: any; }) {
+						var category = ref.category;
+						var action = ref.action;
+						var properties = ref.properties;
+						if (action === "Contact Form Shown" && category === "Zendesk Web Widget" && properties && properties.name === "contact-form" && scope.me?.hasWorkflow('net.atos.entng.support.controllers.DisplayController|view')) {
+							(window as any).zE('webWidget', 'updateSettings', {
+								webWidget: {
+									contactForm: {
+										suppress: true
+									}
+								}
+							});
+							(window as any).zE('webWidget', 'close');
+							window.open("/support", "_blank");
+						}
+					});
+				};
+			}
+		});
 
 	}
 	constructor(private tracking:TrackingService) {}
