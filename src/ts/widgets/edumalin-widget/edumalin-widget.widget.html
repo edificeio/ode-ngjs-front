@@ -28,7 +28,8 @@
   <div class="widget-header" style="border: 0">
     <div class="subtitle">
       <a
-        rel="noopener"
+        class="seemore"
+        href="#"
         ng-click="ctrl.onButtonClick(ctrl.generateLinkGar(), 'EDUMALIN_OPEN_GAR')"
         style="display: flex"
       >
@@ -196,31 +197,26 @@
             </div>
           </div>
         </div>
-        <div>
-          <div class="row">
-            <div class="col-md-5 col-sm-12"></div>
-            <div class="col-md-3 col-sm-12 mb3">
-              <button
-                type="button"
-                class="btn btn-outline-primary form-control"
-                ng-click="ctrl.onButtonClick(ctrl.generateLinkGar(), 'EDUMALIN_OPEN_GAR')"
-                translate
-                content="edumalin.acceder"
-              />
-            </div>
-            <div class="col-md-4 col-sm-12">
-              <button
-                ng-if="ctrl.currentWidget.buttonLink"
-                type="button"
-                class="btn btn-primary form-control"
-                ng-click="ctrl.onButtonClick(ctrl.currentWidget.buttonLink, 'EDUMALIN_OPEN_LINK')"
-                translate
-              >
-                {{ctrl.currentWidget.buttonTitle}}
-              </button>
-            </div>
-          </div>
-        </div>
+      </div>
+      <div class="d-flex justify-content-end">
+        <button
+          type="button"
+          class="btn btn-outline-primary ng-binding ng-scope"
+          ng-click="ctrl.onButtonClick(ctrl.generateLinkGar(), 'EDUMALIN_OPEN_GAR')"
+          style="margin-right: 1%"
+          translate
+          content="edumalin.acceder"
+        />
+
+        <button
+          ng-if="ctrl.currentWidget.buttonLink"
+          type="button"
+          class="btn btn-primary ng-binding ng-scope"
+          ng-click="ctrl.onButtonClick(ctrl.currentWidget.buttonLink, 'EDUMALIN_OPEN_LINK')"
+          translate
+        >
+          {{ctrl.currentWidget.buttonTitle}}
+        </button>
       </div>
     </ode-modal-body>
   </ode-modal>
