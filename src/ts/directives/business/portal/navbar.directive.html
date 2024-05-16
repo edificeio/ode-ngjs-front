@@ -65,13 +65,6 @@
                             <i18n>navbar.disconnect</i18n>
                         </span></a></li>
 
-                        <li class="nav-item" ng-if="ctrl.currentLanguage == 'fr'"
-            pulsar="{index:5, style:{zIndex:1021}, i18n:'portal.pulsar.help', position:'bottom center'}">
-            <a href="" i18n-title="navbar.help">
-                <help></help><!-- i18n>help.icon</i18n -->
-            </a>
-        </li>
-
                 <li class="nav-item d-md-none"><button class="nav-link btn btn-naked" type="button"
                         aria-controls="navbarCollapsed" aria-expanded="false"
                         aria-label="navbar.secondary.navigation"><svg width="20" height="20" viewBox="0 0 24 24"
@@ -196,12 +189,6 @@
                 <li class="nav-item" ng-include="ctrl.conversationUnreadUrl">
                     <div class="nav-link conversation"
                         ng-click="ctrl.trackEvent($event, {detail:{'open':'conversation'} })"></div>
-                </li>
-                <li class="nav-item" ng-if="ctrl.currentLanguage == 'fr'"
-                pulsar="{index:5, style:{zIndex:1021}, i18n:'portal.pulsar.help', position:'bottom center'}">
-                    <a href="" class="nav-link" i18n-title="navbar.help">
-                        <help></help><!-- i18n>help.icon</i18n -->
-                    </a>
                 </li>
                 <li class="nav-item">
                     <div class="dropdown">

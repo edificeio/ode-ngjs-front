@@ -1,5 +1,5 @@
 import angular, { IModule } from "angular";
-import { Portal, Navbar, WithTheme, Popover, PopoverContent, PopoverOpener, Logout, WidgetContainer, Widget, AppTitle, Pulsar, Assistant, Lightbox, SmartBanner, Modal, ModalContainer, Infotip, Autocomplete, Recorder, SkinSrc, ConnectorLightbox, Help, BindHtml, Xiti, NavigationTrigger, GuardRoot, InputGuard, DirtyGuard, DocumentGuard, CustomGuard, ResetGuard } from "../directives";
+import { Portal, Navbar, WithTheme, Popover, PopoverContent, PopoverOpener, Logout, WidgetContainer, Widget, AppTitle, Pulsar, Assistant, Lightbox, SmartBanner, Modal, ModalContainer, Infotip, Autocomplete, Recorder, SkinSrc, ConnectorLightbox, BindHtml, Xiti, NavigationTrigger, GuardRoot, InputGuard, DirtyGuard, DocumentGuard, CustomGuard, ResetGuard } from "../directives";
 import { QuickstartService, ThemeHelperService, WidgetService, RichContentService, VideoUploadService, VideoEventTrackerService } from "../services";
 
 const dndLists = require('angular-drag-and-drop-lists');
@@ -37,7 +37,6 @@ const module = angular.module("odeUi", ['dndLists']);
     .directive("connectorLightbox", ConnectorLightbox.DirectiveFactory)
     .directive("connectorLightboxTrigger", ConnectorLightbox.TriggerDirectiveFactory)
     .directive("smartBanner", SmartBanner.DirectiveFactory)
-    .directive("help", Help.DirectiveFactory)
     .directive("bindHtml", BindHtml.DirectiveFactory)
     .directive("xiti", Xiti.DirectiveFactory)
 
