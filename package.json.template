@@ -1,6 +1,6 @@
 {
   "name": "ode-ngjs-front",
-  "version": "1.4.3-dev.%generateVersion%",
+  "version": "1.4.3-develop-pedago.%generateVersion%",
   "description": "Open Digital Education Frontend Framework",
   "main": "dist/ts/index.js",
   "types": "dist/ts/index.d.ts",
