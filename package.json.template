@@ -1,6 +1,6 @@
 {
   "name": "ode-ngjs-front",
-  "version": "1.4.6-dev.%generateVersion%",
+  "version": "1.4.6-develop-mozo.%generateVersion%",
   "description": "Open Digital Education Frontend Framework",
   "homepage": "https://github.com/opendigitaleducation/ode-ngjs-front#readme",
   "bugs": {
