@@ -65,7 +65,7 @@
                             <i18n>navbar.disconnect</i18n>
                         </span></a></li>
 
-                        <li class="nav-item" ng-if="ctrl.currentLanguage == 'fr'"
+                        <li class="nav-item" ng-if="ctrl.currentLanguage == 'fr' && me.hasWorkflow('org.entcore.portal.controllers.PortalController|oldHelpEnable')"
             pulsar="{index:5, style:{zIndex:1021}, i18n:'portal.pulsar.help', position:'bottom center'}">
             <a href="" i18n-title="navbar.help">
                 <help></help><!-- i18n>help.icon</i18n -->
@@ -197,7 +197,7 @@
                     <div class="nav-link conversation"
                         ng-click="ctrl.trackEvent($event, {detail:{'open':'conversation'} })"></div>
                 </li>
-                <li class="nav-item" ng-if="ctrl.currentLanguage == 'fr'"
+                <li class="nav-item" ng-if="ctrl.currentLanguage == 'fr' && me.hasWorkflow('org.entcore.portal.controllers.PortalController|oldHelpEnable')"
                 pulsar="{index:5, style:{zIndex:1021}, i18n:'portal.pulsar.help', position:'bottom center'}">
                     <a href="" class="nav-link" i18n-title="navbar.help">
                         <help></help><!-- i18n>help.icon</i18n -->
