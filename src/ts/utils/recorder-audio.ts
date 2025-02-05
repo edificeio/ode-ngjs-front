@@ -132,8 +132,8 @@ export var audio_recorder = (function () {
     loadComponents: function () {
       if (!this.title) {
         this.title =
-          lang.translate("recorder.filename") +
-          L10n.moment().format("DD/MM/YYYY");
+          L10n.moment().format("YYYY-MM-DD HH[h]mm") + " " +
+          lang.translate("recorder.filename.audio");
       }
       loaded = true;
       
