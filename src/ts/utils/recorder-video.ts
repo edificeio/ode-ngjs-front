@@ -369,7 +369,8 @@ export class VideoRecorder implements IAnyRecorder {
         if (!this.stream) return;
         const lang = conf().Platform.idiom;
         if(!this.title){
-            this.title = lang.translate('recorder.filename') + L10n.moment().format('DD/MM/YYYY');
+            this.title = L10n.moment().format("YYYY-MM-DD HH[h]mm") + " " +
+            lang.translate("recorder.filename.video");
         }
         this.prepareRecord();
         this.recorded = new Array();
