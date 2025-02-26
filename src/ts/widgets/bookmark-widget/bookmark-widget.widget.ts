@@ -124,8 +124,13 @@ class Controller implements IController {
 		});
 	}
 
+	removeHashStart(url: string) {
+		return url.replace('#start', '');
+	}
+
 	createBookmark() {
 		if( this.createdBookmark ) {
+			this.createdBookmark.url = this.removeHashStart(this.createdBookmark.url);
 			this.createdBookmark.create().then( b => {
 				this.bookmarks.push( b );
 				this.cancelCreate();
@@ -136,6 +141,7 @@ class Controller implements IController {
 	
 	updateBookmark() {
 		if( this.editedBookmark ) {
+			this.editedBookmark.url = this.removeHashStart(this.editedBookmark.url);
 			const edited = this.editedBookmark;
 			edited.update()
 			.then( () => {
@@ -146,6 +152,8 @@ class Controller implements IController {
 			});
 		}
 	}
+
+	
 
 	deleteBookmark( b:Bookmark ) {
 		b.delete().then( b => {
