@@ -1,0 +1,319 @@
+<style>
+  .cantine-menu-card {
+    color: #333;
+    justify-content: center;
+    align-items: center;
+    padding: 5%;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .cantine-separator {
+    border: none;
+    height: 1px;
+    background-color: #ccc;
+    margin: 3% 0;
+  }
+
+  .cantine-section {
+    margin-bottom: 3%;
+  }
+
+  .cantine-section-title {
+    font-weight: bold;
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+  }
+
+  .cantine-item {
+    margin-left: 1%;
+    font-family: 'Roboto';
+    color: #4A4A4A;
+    font-size: medium;
+  }
+
+  .cantine-item {
+    align-items: center;
+    gap: 5px;
+  }
+
+  .cantine-items-container {
+    border-left: 2px solid #ccc;
+    margin-left: 0.8%;
+    padding-left: 3%;
+  }
+
+  .cantine-icon {
+    width: 1em;
+    height: 1em;
+    margin-left: 5px;
+    vertical-align: middle;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+
+  .cantine-dot {
+    height: 0.6em;
+    width: 0.6em;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 2%;
+  }
+
+  .cantine-arrow-button {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+  }
+
+  .cantine-arrow-button:hover {
+    opacity: 1;
+  }
+
+  .cantine-arrow-button:focus {
+    outline: none;
+  }
+
+  /* Collapse style for allergens */
+  .cantine-allergen-collapse {
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    padding: 0px;
+    display: none;
+    transition: all 0.3s ease-in-out;
+    font-size: 0.9em;
+  }
+
+  .cantine-allergen-collapse.open {
+    display: block;
+  }
+
+  .cantine-collapse-toggle {
+    background-color: #f7955c;
+    border: none;
+    padding: 0px 10px;
+    /* Smaller padding */
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    display: block;
+    margin-top: 0px;
+    color: white;
+    font-size: 0.8em;
+    /* Smaller font size */
+  }
+
+  .cantine-collapse-toggle:hover {
+    background-color: #e6b848;
+  }
+
+  .cantine-red {
+    background-color: red;
+  }
+
+  .cantine-green {
+    background-color: green;
+  }
+
+  .cantine-blue {
+    background-color: blue;
+  }
+
+  .cantine-pink {
+    background-color: pink;
+  }
+
+  .cantine-yellow {
+    background-color: orange;
+  }
+</style>
+
+<div class="widget-dashboard">
+  <div class="cantine-menu-card">
+    <h2
+      style="color:#333; font-family: 'Roboto', sans-serif; display: flex; align-items: center; justify-content: center; gap: 10px;">
+      <i18n>cantine.title</i18n>
+    </h2>
+    <div class="cantine-separator"></div>
+
+    <div class="cantine-date-navigation"
+      style="display: flex; align-items: center; justify-content: center; gap: 10px; position: relative;">
+      <button class="cantine-arrow-button" ng-click="ctrl.changeDate(-1)">&#8592;</button>
+      <span style="font-size: 1.2em; font-weight: bold; cursor: pointer; " ng-show="!ctrl.showDatepicker"
+        ng-click="ctrl.toggleDatepicker(true)">{{
+        ctrl.currentDate }}</span>
+
+      <input type="date" ng-model="ctrl.pickerDate" ng-blur="ctrl.onDateBlur()" ng-show="ctrl.showDatepicker"
+        style="font-size: 1.2em; font-weight: bold; cursor: pointer; text-align: center;"
+        ng-click="ctrl.toggleDatepicker(true)" />
+
+      <button class="cantine-arrow-button" ng-click="ctrl.changeDate(1)">&#8594;</button>
+
+    </div>
+
+
+    <div class="cantine-section">
+      <div class="cantine-section-title">
+        <span class="cantine-dot cantine-red"></span>
+        <i18n>cantine.entree</i18n>
+      </div>
+      <div class="cantine-items-container">
+        <div class="cantine-item" ng-repeat="item in ctrl.data.entrees">
+          {{ item.nom }}
+          <img ng-if="item.bio" src="/assets/widgets/cantine-widget/cantine-logos/bio-logo.png" alt="Bio"
+            class="cantine-icon" title="Agriculture biologique">
+          <img ng-if="item.faitmaison" src="/assets/widgets/cantine-widget/cantine-logos/fait-maison-logo.png"
+            alt="Fait Maison" class="cantine-icon" title="Fait maison">
+          <img ng-if="item.vegetarien" src="/assets/widgets/cantine-widget/cantine-logos/vegetarien-logo.png"
+            alt="Vegetarian" class="cantine-icon" title="Végétarien">
+          <img ng-if="item.local" src="/assets/widgets/cantine-widget/cantine-logos/produit-local-logo.png"
+            alt="Local Product" class="cantine-icon" title="Produit local">
+          <!-- Collapse for Allergens -->
+          <button class="cantine-collapse-toggle" ng-click="item.showAllergies = !item.showAllergies"
+            ng-if="ctrl.getAllergies(item).length > 0">
+            <i18n>cantine.allergenes</i18n>
+          </button>
+          <div class="cantine-allergen-collapse" ng-class="{'open': item.showAllergies}"
+            ng-if="ctrl.getAllergies(item).length > 0">
+            <!-- Display allergens as a comma-separated text -->
+            <span>{{ ctrl.getAllergies(item).join(', ') }}</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="cantine-section">
+      <div class="cantine-section-title">
+        <span class="cantine-dot cantine-green"></span>
+        <i18n>cantine.plat</i18n>
+      </div>
+      <div class="cantine-items-container">
+        <div class="cantine-item" ng-repeat="item in ctrl.data.plats">
+          {{ item.nom }}
+          <img ng-if="item.bio" src="/assets/widgets/cantine-widget/cantine-logos/bio-logo.png" alt="Bio"
+            class="cantine-icon" title="Agriculture biologique">
+          <img ng-if="item.faitmaison" src="/assets/widgets/cantine-widget/cantine-logos/fait-maison-logo.png"
+            alt="Fait Maison" class="cantine-icon" title="Fait maison">
+          <img ng-if="item.vegetarien" src="/assets/widgets/cantine-widget/cantine-logos/vegetarien-logo.png"
+            alt="Vegetarian" class="cantine-icon" title="Végétarien">
+          <img ng-if="item.local" src="/assets/widgets/cantine-widget/cantine-logos/produit-local-logo.png"
+            alt="Local Product" class="cantine-icon" title="Produit local">
+
+          <!-- Collapse for Allergens -->
+          <button class="cantine-collapse-toggle" ng-click="item.showAllergies = !item.showAllergies"
+            ng-if="ctrl.getAllergies(item).length > 0">
+            <i18n>cantine.allergenes</i18n>
+          </button>
+          <div class="cantine-allergen-collapse" ng-class="{'open': item.showAllergies}"
+            ng-if="ctrl.getAllergies(item).length > 0">
+            <!-- Display allergens as a comma-separated text -->
+            <span>{{ ctrl.getAllergies(item).join(', ') }}</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="cantine-section">
+      <div class="cantine-section-title">
+        <span class="cantine-dot cantine-blue"></span>
+        <i18n>cantine.accompagnement</i18n>
+      </div>
+      <div class="cantine-items-container">
+        <div class="cantine-item" ng-repeat="item in ctrl.data.accompagnements">
+          {{ item.nom }}
+          <img ng-if="item.bio" src="/assets/widgets/cantine-widget/cantine-logos/bio-logo.png" alt="Bio"
+            class="cantine-icon" title="Agriculture biologique">
+          <img ng-if="item.faitmaison" src="/assets/widgets/cantine-widget/cantine-logos/fait-maison-logo.png"
+            alt="Fait Maison" class="cantine-icon" title="Fait maison">
+          <img ng-if="item.vegetarien" src="/assets/widgets/cantine-widget/cantine-logos/vegetarien-logo.png"
+            alt="Vegetarian" class="cantine-icon" title="Végétarien">
+          <img ng-if="item.local" src="/assets/widgets/cantine-widget/cantine-logos/produit-local-logo.png"
+            alt="Local Product" class="cantine-icon" title="Produit local">
+
+          <!-- Collapse for Allergens -->
+          <button class="cantine-collapse-toggle" ng-click="item.showAllergies = !item.showAllergies"
+            ng-if="ctrl.getAllergies(item).length > 0">
+            <i18n>cantine.allergenes</i18n>
+          </button>
+          <div class="cantine-allergen-collapse" ng-class="{'open': item.showAllergies}"
+            ng-if="ctrl.getAllergies(item).length > 0">
+            <!-- Display allergens as a comma-separated text -->
+            <span>{{ ctrl.getAllergies(item).join(', ') }}</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="cantine-section">
+      <div class="cantine-section-title">
+        <span class="cantine-dot cantine-pink"></span>
+        <i18n>cantine.laitage</i18n>
+      </div>
+      <div class="cantine-items-container">
+        <div class="cantine-item" ng-repeat="item in ctrl.data.laitage">
+          {{ item.nom }}
+          <img ng-if="item.bio" src="/assets/widgets/cantine-widget/cantine-logos/bio-logo.png" alt="Bio"
+            class="cantine-icon" title="Agriculture biologique">
+          <img ng-if="item.faitmaison" src="/assets/widgets/cantine-widget/cantine-logos/fait-maison-logo.png"
+            alt="Fait Maison" class="cantine-icon" title="Fait maison">
+          <img ng-if="item.vegetarien" src="/assets/widgets/cantine-widget/cantine-logos/vegetarien-logo.png"
+            alt="Vegetarian" class="cantine-icon" title="Végétarien">
+          <img ng-if="item.local" src="/assets/widgets/cantine-widget/cantine-logos/produit-local-logo.png"
+            alt="Local Product" class="cantine-icon" title="Produit local">
+
+          <!-- Collapse for Allergens -->
+          <button class="cantine-collapse-toggle" ng-click="item.showAllergies = !item.showAllergies"
+            ng-if="ctrl.getAllergies(item).length > 0">
+            <i18n>cantine.allergenes</i18n>
+          </button>
+          <div class="cantine-allergen-collapse" ng-class="{'open': item.showAllergies}"
+            ng-if="ctrl.getAllergies(item).length > 0">
+            <!-- Display allergens as a comma-separated text -->
+            <span>{{ ctrl.getAllergies(item).join(', ') }}</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="cantine-section">
+      <div class="cantine-section-title">
+        <span class="cantine-dot cantine-yellow"></span>
+        <i18n>cantine.dessert</i18n>
+      </div>
+      <div class="cantine-items-container">
+        <div class="cantine-item" ng-repeat="item in ctrl.data.desserts">
+          {{ item.nom }}
+          <img ng-if="item.bio" src="/assets/widgets/cantine-widget/cantine-logos/bio-logo.png" alt="Bio"
+            class="cantine-icon" title="Agriculture biologique">
+          <img ng-if="item.faitmaison" src="/assets/widgets/cantine-widget/cantine-logos/fait-maison-logo.png"
+            alt="Fait Maison" class="cantine-icon" title="Fait maison">
+          <img ng-if="item.vegetarien" src="/assets/widgets/cantine-widget/cantine-logos/vegetarien-logo.png"
+            alt="Vegetarian" class="cantine-icon" title="Végétarien">
+          <img ng-if="item.local" src="/assets/widgets/cantine-widget/cantine-logos/produit-local-logo.png"
+            alt="Local Product" class="cantine-icon" title="Produit local">
+
+          <!-- Collapse for Allergens -->
+          <button class="cantine-collapse-toggle" ng-click="item.showAllergies = !item.showAllergies"
+            ng-if="ctrl.getAllergies(item).length > 0">
+            <i18n>cantine.allergenes</i18n>
+          </button>
+          <div class="cantine-allergen-collapse" ng-class="{'open': item.showAllergies}"
+            ng-if="ctrl.getAllergies(item).length > 0">
+            <!-- Display allergens as a comma-separated text -->
+            <span>{{ ctrl.getAllergies(item).join(', ') }}</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

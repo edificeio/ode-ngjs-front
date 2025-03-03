@@ -30,7 +30,8 @@ export class ThemeHelperService {
         "universalis-widget":   "ic-widget-universalis",
         "briefme-widget":       "ic-widget-briefme big",
         "edumalin-widget":      "ic-widget-edumalin",
-        "mediacentre-widget":   "ic-widget-mediacentre"
+        "mediacentre-widget":   "ic-widget-mediacentre",
+        "cantine-widget":       "ic-widget-cantine",
     }
 
     constructor( 
