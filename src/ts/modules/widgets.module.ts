@@ -16,6 +16,7 @@ import Briefme = require("../widgets/briefme-widget/briefme-widget.widget");
 import LastInfos = require("../widgets/last-infos-widget/last-infos-widget.widget");
 import Edumalin = require("../widgets/edumalin-widget/edumalin-widget.widget");
 import Mediacentre = require("../widgets/mediacentre-widget/mediacentre-widget.widget");
+import Cantine = require("../widgets/cantine-widget/cantine-widget.widget");
 
 
 // ============ /!\ IMPORTANT /!\ ============
@@ -56,7 +57,8 @@ export enum KnownWidget {
     briefme         = "briefme-widget",
     lastInfos       = "last-infos-widget",
     edumalin        = "edumalin-widget",
-    mediacentre     = "mediacentre-widget"
+    mediacentre     = "mediacentre-widget",
+    cantine         = "cantine-widget"
 
 };
 export type WidgetLoader = (widgetName:String)=>Promise<void>;
@@ -85,6 +87,7 @@ const module = angular.module("odeWidgets", [])
             case KnownWidget.lastInfos: await loadLastInfosWidgetModule().then( mod=>{ $injector.loadNewModules([mod]) }); break;
             case KnownWidget.edumalin: await loadEdumalinWidgetModule().then( mod=>{ $injector.loadNewModules([mod]) }); break;
             case KnownWidget.mediacentre: await loadMediacentreWidgetModule().then( mod =>{ $injector.loadNewModules([mod]) }); break;
+            case KnownWidget.cantine: await loadCantineWidgetModule().then( mod =>{ $injector.loadNewModules([mod]) }); break;
             default: throw `Unknown widget "${widgetName}"`;
         }
     };
@@ -412,6 +415,25 @@ function loadMediacentreWidgetModule() {
         );
     });
 }
+
+    /** Dynamically load the "Cantine" widget, which is packaged as a separate entry thanks to require.ensure(). */
+    function loadCantineWidgetModule() {
+        return new Promise<string>( (resolve, reject) => {
+            // Note: the following "require.ensure" function acts as a compiling directive for webpack, and cannot be variabilized.
+            require.ensure(
+                ["../widgets/cantine-widget/cantine-widget.widget"],
+                function(require) {
+                    var jsModule = <typeof Cantine> require("../widgets/cantine-widget/cantine-widget.widget");
+                    resolve( jsModule.odeModuleName );
+                },
+                function(error) {
+                    console.log(error);
+                    reject();
+                },
+                "widgets/cantine-widget/cantine-widget.widget"
+            );
+        });
+    }
 
 /**
  * The "odeWidgets" angularjs module is a placeholder for widgets directives.
