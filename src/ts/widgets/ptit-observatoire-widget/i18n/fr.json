@@ -1,0 +1,18 @@
+{
+  "ptitObservatoire.title": "Centraliser mes observations",
+  "ptitObservatoire.newObservation": "Nouvelle observation",
+  "ptitObservatoire.selectStudent": "Sélectionner un élève",
+  "ptitObservatoire.modal.title": "Saisie de l'Observation",
+  "ptitObservatoire.modal.observation": "Observation",
+  "ptitObservatoire.modal.evaluation": "Évaluation",
+  "ptitObservatoire.modal.evaluation.strength": "Forces",
+  "ptitObservatoire.modal.evaluation.neutral": "Neutre",
+  "ptitObservatoire.modal.evaluation.difficulties": "Difficultés",
+  "ptitObservatoire.modal.categories": "Catégories",
+  "ptitObservatoire.modal.options": "Options",
+  "ptitObservatoire.modal.options.private": "Observation privée",
+  "ptitObservatoire.modal.save": "Enregistrer l'observation",
+  "ptitObservatoire.notify.save.success": "Observation enregistrée avec succès",
+  "ptitObservatoire.notify.save.error": "Une erreur est survenue lors de l'enregistrement de l'observation",
+  "ptitObservatoire.modal.textarea.placeholder": "Je suis bienveillant et factuel : J'écris ce que j'ai vu et entendu"
+}
