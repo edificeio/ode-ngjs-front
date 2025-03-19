@@ -33,6 +33,7 @@ export class ThemeHelperService {
         "mediacentre-widget":   "ic-widget-mediacentre",
         "cantine-widget":       "ic-widget-cantine",
         "evaluation-widget":    "ic-widget-evaluation",
+        "ptit-observatoire-widget": "ic-widget-edumalin",
     }
 
     constructor( 
