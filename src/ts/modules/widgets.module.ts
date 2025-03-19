@@ -17,6 +17,7 @@ import LastInfos = require("../widgets/last-infos-widget/last-infos-widget.widge
 import Edumalin = require("../widgets/edumalin-widget/edumalin-widget.widget");
 import Mediacentre = require("../widgets/mediacentre-widget/mediacentre-widget.widget");
 import Cantine = require("../widgets/cantine-widget/cantine-widget.widget");
+import PtitObservatoire = require("../widgets/ptit-observatoire-widget/ptit-observatoire-widget.widget");
 
 
 // ============ /!\ IMPORTANT /!\ ============
@@ -58,7 +59,8 @@ export enum KnownWidget {
     lastInfos       = "last-infos-widget",
     edumalin        = "edumalin-widget",
     mediacentre     = "mediacentre-widget",
-    cantine         = "cantine-widget"
+    cantine         = "cantine-widget",
+    ptitObservatoire = "ptit-observatoire-widget",
 
 };
 export type WidgetLoader = (widgetName:String)=>Promise<void>;
@@ -88,6 +90,7 @@ const module = angular.module("odeWidgets", [])
             case KnownWidget.edumalin: await loadEdumalinWidgetModule().then( mod=>{ $injector.loadNewModules([mod]) }); break;
             case KnownWidget.mediacentre: await loadMediacentreWidgetModule().then( mod =>{ $injector.loadNewModules([mod]) }); break;
             case KnownWidget.cantine: await loadCantineWidgetModule().then( mod =>{ $injector.loadNewModules([mod]) }); break;
+            case KnownWidget.ptitObservatoire: await loadPtitObservatoireWidgetModule().then( mod =>{ $injector.loadNewModules([mod]) }); break;
             default: throw `Unknown widget "${widgetName}"`;
         }
     };
@@ -433,6 +436,24 @@ function loadMediacentreWidgetModule() {
                 "widgets/cantine-widget/cantine-widget.widget"
             );
         });
+    }
+
+    /** Dynamically load the "PtitObservatoire" widget, which is packaged as a separate entry thanks to require.ensure(). */
+    function loadPtitObservatoireWidgetModule() {
+        return new Promise<string>((resolve, reject) => {
+            require.ensure(
+                ["../widgets/ptit-observatoire-widget/ptit-observatoire-widget.widget"],
+                function(require) {
+                    var jsModule = <typeof PtitObservatoire> require('../widgets/ptit-observatoire-widget/ptit-observatoire-widget.widget');
+                    resolve( jsModule.odeModuleName );
+                },
+                function(error) {
+                    console.log(error);
+                    reject()
+                },
+                "widgets/ptit-observatoire-widget/ptit-observatoire-widget.widget"
+            )
+        })
     }
 
 /**
