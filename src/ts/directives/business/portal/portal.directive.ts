@@ -128,7 +128,8 @@ class Directive implements IDirective<PortalScope,JQLite,IAttributes,IController
 								messageButton: {
 									"*": "Assistance ENT",
 									"es-419": "Asistencia ENT"
-								}
+								},
+								originalArticleButton: data.articleRedirectButton ?? true,
 							}
 						},
 					});
