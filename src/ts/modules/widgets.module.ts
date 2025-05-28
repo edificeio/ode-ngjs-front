@@ -17,6 +17,7 @@ import LastInfos = require("../widgets/last-infos-widget/last-infos-widget.widge
 import Edumalin = require("../widgets/edumalin-widget/edumalin-widget.widget");
 import Mediacentre = require("../widgets/mediacentre-widget/mediacentre-widget.widget");
 import Cantine = require("../widgets/cantine-widget/cantine-widget.widget");
+import ScreenTime= require("../widgets/screen-time-widget/screen-time-widget.widget");
 
 
 // ============ /!\ IMPORTANT /!\ ============
@@ -58,7 +59,8 @@ export enum KnownWidget {
     lastInfos       = "last-infos-widget",
     edumalin        = "edumalin-widget",
     mediacentre     = "mediacentre-widget",
-    cantine         = "cantine-widget"
+    cantine         = "cantine-widget",
+    screenTime      = "screen-time-widget"
 
 };
 export type WidgetLoader = (widgetName:String)=>Promise<void>;
@@ -88,6 +90,7 @@ const module = angular.module("odeWidgets", [])
             case KnownWidget.edumalin: await loadEdumalinWidgetModule().then( mod=>{ $injector.loadNewModules([mod]) }); break;
             case KnownWidget.mediacentre: await loadMediacentreWidgetModule().then( mod =>{ $injector.loadNewModules([mod]) }); break;
             case KnownWidget.cantine: await loadCantineWidgetModule().then( mod =>{ $injector.loadNewModules([mod]) }); break;
+            case KnownWidget.screenTime: await loadScreenTimeWidgetModule().then( mod =>{ $injector.loadNewModules([mod]) }); break;
             default: throw `Unknown widget "${widgetName}"`;
         }
     };
@@ -433,6 +436,43 @@ function loadMediacentreWidgetModule() {
                 "widgets/cantine-widget/cantine-widget.widget"
             );
         });
+    }
+
+    /** Dynamically load the "Cantine" widget, which is packaged as a separate entry thanks to require.ensure(). */
+    function loadScreenTimeWidgetModule() {
+        return new Promise<string>( (resolve, reject) => {
+            // Note: the following "require.ensure" function acts as a compiling directive for webpack, and cannot be variabilized.
+            require.ensure(
+                ["../widgets/screen-time-widget/screen-time-widget.widget"],
+                function(require) {
+                    var jsModule = <typeof ScreenTime> require("../widgets/screen-time-widget/screen-time-widget.widget");
+                    resolve( jsModule.odeModuleName );
+                },
+                function(error) {
+                    console.log(error);
+                    reject();
+                },
+                "widgets/screen-time-widget/screen-time-widget.widget"
+            );
+        });
+    }
+
+    /** Dynamically load the "PtitObservatoire" widget, which is packaged as a separate entry thanks to require.ensure(). */
+    function loadPtitObservatoireWidgetModule() {
+        return new Promise<string>((resolve, reject) => {
+            require.ensure(
+                ["../widgets/ptit-observatoire-widget/ptit-observatoire-widget.widget"],
+                function(require) {
+                    var jsModule = <typeof PtitObservatoire> require('../widgets/ptit-observatoire-widget/ptit-observatoire-widget.widget');
+                    resolve( jsModule.odeModuleName );
+                },
+                function(error) {
+                    console.log(error);
+                    reject()
+                },
+                "widgets/ptit-observatoire-widget/ptit-observatoire-widget.widget"
+            )
+        })
     }
 
 /**
