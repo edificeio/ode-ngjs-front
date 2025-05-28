@@ -34,6 +34,7 @@ export class ThemeHelperService {
         "cantine-widget":       "ic-widget-cantine",
         "evaluation-widget":    "ic-widget-evaluation",
         "ptit-observatoire-widget": "ic-widget-edumalin",
+        "screen-time-widget":   "ic-widget-screen"
     }
 
     constructor( 
