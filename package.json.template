@@ -26,6 +26,7 @@
     "watch": "npx webpack --config webpack.config.watch.js --env build_target=${npm_config_watch_springboard}/assets/js/ode-ngjs-front --watch"
   },
   "dependencies": {
+    "chart.js": "4.4.9",
     "core-js": "3.9.1",
     "humane-js": "3.2.2",
     "moment": "2.29.1",

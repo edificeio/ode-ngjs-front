@@ -1,0 +1,17 @@
+<div>
+    <!-- User selector -->
+    <label for="userSelect">Choisir un utilisateur :</label>
+    <select id="userSelect" ng-model="ctrl.selectedUser" ng-change="ctrl.updateChart()">
+        <option value="Mathieu">Mathieu</option>
+        <option value="Jean">Jean</option>
+    </select>
+
+    <!-- View mode switch -->
+    <label for="viewMode">Mode :</label>
+    <select id="viewMode" ng-model="ctrl.viewMode" ng-change="ctrl.updateChart()">
+        <option value="weekly">Hebdomadaire</option>
+        <option value="daily">Quotidien</option>
+    </select>
+</div>
+
+<canvas id="myChart" width="400" height="200"></canvas>
