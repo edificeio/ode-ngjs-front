@@ -1,11 +1,11 @@
 {
-"maxicours-widget": "Aide aux devoirs",
-"maxicours-widget.widget.title": "Aide aux devoirs",
-"maxicours-widget.widget.inactive.user": "Vous n'êtes pas authentifié sur le service.",
-"maxicours-widget.widget.connect": "Activer mon compte",
-"maxicours-widget.widget.refresh": "Rafraîchir les informations",
-"maxicours-widget.widget.my.points": "Mes points",
-"maxicours-widget.widget.points": "pts",
-"maxicours-widget.widget.daily.session": "Ma séance du jour",
-"maxicours-widget.widget.my.courses": "Mes parcours à réaliser"
+  "maxicours-widget": "Aide aux devoirs",
+  "maxicours-widget.widget.connect": "Activer mon compte",
+  "maxicours-widget.widget.daily.session": "Ma séance du jour",
+  "maxicours-widget.widget.inactive.user": "Vous n'êtes pas authentifié sur le service.",
+  "maxicours-widget.widget.my.courses": "Mes parcours à réaliser",
+  "maxicours-widget.widget.my.points": "Mes points",
+  "maxicours-widget.widget.points": "pts",
+  "maxicours-widget.widget.refresh": "Rafraîchir les informations",
+  "maxicours-widget.widget.title": "Aide aux devoirs"
 }

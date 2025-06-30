@@ -1,10 +1,10 @@
 {
-"school-widget.widget.my.classroom": "Ma classe",
-"school-widget.widget.my.classrooms": "Mes classes",
-"school-widget.widget.my.team": "Mes enseignants",
-"school-widget.widget.school.team": "Équipe enseignante",
-"school-widget.widget.school.managers": "Personnels",
-"school-widget.widget.school.personnelAndTeachers": "Personnels et Enseignants",
-"school-widget.widget.students": "Élèves",
-"school-widget": "Mon réseau"
+  "school-widget": "Mon réseau",
+  "school-widget.widget.my.classroom": "Ma classe",
+  "school-widget.widget.my.classrooms": "Mes classes",
+  "school-widget.widget.my.team": "Mes enseignants",
+  "school-widget.widget.school.managers": "Personnels",
+  "school-widget.widget.school.personnelAndTeachers": "Personnels et Enseignants",
+  "school-widget.widget.school.team": "Équipe enseignante",
+  "school-widget.widget.students": "Élèves"
 }

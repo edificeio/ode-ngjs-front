@@ -1,5 +1,5 @@
 {
-"my-apps.widget.title": "Mes applis",
-"my-apps.widget.options":  "Plus",
-"my-apps.widget.more":  "Sélectionner vos applications favorites"
+  "my-apps.widget.more": "Sélectionner vos applications favorites",
+  "my-apps.widget.options": "Plus",
+  "my-apps.widget.title": "Mes applis"
 }
