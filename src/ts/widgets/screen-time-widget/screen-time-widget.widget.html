@@ -293,8 +293,7 @@
                 <label style="font-size: 14px;" for="userSelect">Utilisateur :</label>
                 <div ng-if="ctrl.isParent">
                     <select id="userSelect" class="custom-select" ng-model="ctrl.selectedChildHistogram"
-                        ng-options="child.userId as child.name for child in ctrl.children"
-                        ng-change="ctrl.fetchLightboxData()"> </select>
+                        ng-options="child.userId as child.name for child in ctrl.children"> </select>
                 </div>
 
                 <label for="viewMode">Affichage :</label>
