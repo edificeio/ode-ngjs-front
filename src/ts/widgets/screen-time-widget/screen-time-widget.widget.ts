@@ -96,7 +96,7 @@ export class Controller {
             this.weekStart = moment().startOf('isoWeek');
             this.weekEnd = moment().endOf('isoWeek');
             this.selectedChildHistogram = this.selectedUser;
-            this.fetchLightboxData();
+
         }
     }
 
@@ -265,7 +265,6 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
 
         // Helper to generate a unique key for caching data based on user and date range
         const generateDataKey = (userId: string, dailyDate: string, startDate: string, endDate: string) => {
-            console.log("3");
             return `${userId}_daily_${dailyDate}_weekly_${startDate}_${endDate}`;
         };
 
@@ -311,29 +310,22 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
                 ctrl.weekEnd.format('YYYY-MM-DD')
             );
 
-            // Check if data is already cached
-            if (ctrl.userData[currentKey]) {
+            fetchAllScreenTimeDataForUserAndDates(
+                $http,
+                ctrl,
+                userIdForLightbox,
+                ctrl.selectedDailyDate,
+                ctrl.weekStart.format('YYYY-MM-DD'),
+                ctrl.weekEnd.format('YYYY-MM-DD')
+            ).then((data) => {
+                ctrl.userData[currentKey] = { weekly: data.weekly, daily: data.daily };
                 if (ctrl.showLightbox) {
                     setTimeout(() => ctrl.updateChart(), 50);
                 }
-            } else {
-                fetchAllScreenTimeDataForUserAndDates(
-                    $http,
-                    ctrl,
-                    userIdForLightbox,
-                    ctrl.selectedDailyDate,
-                    ctrl.weekStart.format('YYYY-MM-DD'),
-                    ctrl.weekEnd.format('YYYY-MM-DD')
-                ).then((data) => {
-                    ctrl.userData[currentKey] = { weekly: data.weekly, daily: data.daily };
-                    if (ctrl.showLightbox) {
-                        setTimeout(() => ctrl.updateChart(), 50);
-                    }
-                    scope.$applyAsync();
-                }).catch(error => {
-                    console.error("Error fetching data for lightbox:", error);
-                });
-            }
+                scope.$applyAsync();
+            }).catch(error => {
+                console.error("Error fetching data for lightbox:", error);
+            });
         };
 
         ctrl.updateChart = () => {
@@ -464,16 +456,24 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
         // Watch for lightbox visibility changes
         scope.$watch(() => ctrl.showLightbox, (isVisible: boolean) => {
             if (isVisible) {
+                // When lightbox opens:
+                // 1. Set selectedChildHistogram. This will trigger the selectedChildHistogram watch,
+                //    which will then call fetchLightboxData() (the single desired API call).
+                ctrl.selectedChildHistogram = ctrl.selectedUser;
+
+                // 2. Schedule chart update after a short delay, allowing fetchLightboxData() to begin.
                 setTimeout(() => {
                     ctrl.updateChart();
                 }, 100);
             } else {
+                // When lightbox closes
                 if (chartInstance) {
                     chartInstance.destroy();
                     chartInstance = null;
                 }
             }
         });
+
     }
 }
 
