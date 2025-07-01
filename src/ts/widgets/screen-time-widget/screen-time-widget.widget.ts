@@ -1,63 +1,194 @@
-import angular, { IAttributes, IController, IDirective, IScope } from "angular";
-import { conf, notif } from "../../utils";
+import angular, { IAttributes, IController, IDirective, IScope, IHttpService } from "angular";
+import { conf, notif, session } from "../../utils";
 import { Chart, registerables } from "chart.js";
+import moment, { Moment } from "moment";
+import 'moment/locale/fr';
 
-// Register Chart.js components
 Chart.register(...registerables);
-
-// Screen time data structure
-interface ScreenTimeData {
-    weekly: {
-        [key: string]: number[]; // per user, 7-day weekly data
-    };
-    daily: {
-        [key: string]: { [hour: string]: number }; // per user, hourly screen time (e.g., "09:00": 30)
-    };
-}
-// Mocked API function
-function fetchScreenTimeData(): Promise<ScreenTimeData> {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve({
-                weekly: {
-                    Mathieu: [12, 19, 3, 5, 2, 3, 1],
-                    Jean: [5, 8, 6, 7, 4, 2, 3]
-                },
-                daily: {
-                    Mathieu: {
-                        "08:00": 15,
-                        "09:00": 10,
-                        "10:00": 30,
-                        "11:00": 20,
-                        "12:00": 25,
-                        "13: 00": 17,
-                        "16:00": 5,
-                        "18:00": 10,
-                        "20:00": 8,
-                        "22:00": 12,
-                        "23:00": 4
-                    },
-                    Jean: {
-                        "07:00": 5,
-                        "09:00": 25,
-                        "10:00": 10,
-                        "18:00": 15
-                    }
-                }
-            });
-        }, 100);
-    });
-}
-
+moment.locale('fr');
 
 // Controller
 export class Controller {
-    public selectedUser: string = "Mathieu";
+    public selectedUser: string = "";
     public viewMode: "weekly" | "daily" = "weekly";
-    public screenTimeData: ScreenTimeData = { weekly: {}, daily: {} };
+
+    public userData: { [key: string]: { weekly: any, daily: any } } = {};
+    public selectedDailyDate: string = moment().format('YYYY-MM-DD');
+    public weekStart: Moment = moment().startOf('isoWeek'); // Monday
+    public weekEnd: Moment = moment().endOf('isoWeek');     // Sunday
+
     public updateChart: () => void = () => { };
+
+    public todayOnCampus = 0;
+    public todayOffCampus = 0;
+    public todayTotal = 0;
+    public todaySchoolUsePercentage: number = 0;
+    public todayOutOfSchoolPercentage: number = 0;
+
+    public weeklyAvgOnCampus = 0;
+    public weeklyAvgOffCampus = 0;
+    public weeklyTotalAverage = 0;
+    public weeklyAvgSchoolUsePercentage: number = 0;
+    public weeklyAvgOutOfSchoolPercentage: number = 0;
+
+    // new props
+    public fixedTodayOnCampus = 0;
+    public fixedTodayOffCampus = 0;
+    public fixedTodayTotal = 0;
+    public fixedTodaySchoolUsePercentage: number = 0;
+    public fixedTodayOutOfSchoolPercentage: number = 0;
+
+    public fixedWeeklyAvgOnCampus = 0;
+    public fixedWeeklyAvgOffCampus = 0;
+    public fixedWeeklyTotalAverage = 0;
+    public fixedWeeklyAvgSchoolUsePercentage: number = 0;
+    public fixedWeeklyAvgOutOfSchoolPercentage: number = 0;
+
+
+    // end of new 
+
+    public customWeekMode: boolean = false;
+    public customStartDate: string = "";
+    public customEndDate: string = "";
+
+    public isParent: boolean = false;
+
+    public hasError: boolean = false;
+    public errorMessage: string = "";
+
+    public fetchDataForCurrentUser: () => void = () => { };
+    public fetchLightboxData: () => void = () => { };
+
+    public showLightbox: boolean = false;
+    public showDatePicker: boolean = false;
+
+    public children: { id: string; name: string; userId: string }[] = [];
+    public selectedChild = null;
+    public selectedChildHistogram = "";
+
+    public toggleDatePicker(show: boolean) {
+        this.showDatePicker = show;
+    }
+
+    public setDateFromPicker(date: string) {
+        this.selectedDailyDate = moment(date).format('YYYY-MM-DD');
+        this.showDatePicker = false;
+        this.fetchLightboxData();
+    }
+
+    public toggleLightbox(show: boolean) {
+        this.showLightbox = show;
+        if (show) {
+            // Store the current summary values when lightbox opens
+            this.fixedTodayOnCampus = this.todayOnCampus;
+            this.fixedTodayOffCampus = this.todayOffCampus;
+            this.fixedTodayTotal = this.todayTotal;
+            this.fixedTodaySchoolUsePercentage = this.todaySchoolUsePercentage;
+            this.fixedTodayOutOfSchoolPercentage = this.todayOutOfSchoolPercentage;
+            this.fixedWeeklyAvgOnCampus = this.weeklyAvgOnCampus;
+            this.fixedWeeklyAvgOffCampus = this.weeklyAvgOffCampus;
+            this.fixedWeeklyTotalAverage = this.weeklyTotalAverage;
+            this.fixedWeeklyAvgSchoolUsePercentage = this.weeklyAvgSchoolUsePercentage;
+            this.fixedWeeklyAvgOutOfSchoolPercentage = this.weeklyAvgOutOfSchoolPercentage;
+
+            // Initialize lightbox dates to current date/week
+            this.selectedDailyDate = moment().format('YYYY-MM-DD');
+            this.weekStart = moment().startOf('isoWeek');
+            this.weekEnd = moment().endOf('isoWeek');
+            this.selectedChildHistogram = this.selectedUser;
+            this.fetchLightboxData();
+        }
+    }
+
+    public changeDay(offset: number) {
+        this.selectedDailyDate = moment(this.selectedDailyDate).add(offset, 'days').format('YYYY-MM-DD');
+        this.fetchLightboxData();
+    }
+
+    public changeWeek(offset: number) {
+        this.weekStart = this.weekStart.clone().add(offset, 'weeks');
+        this.weekEnd = this.weekStart.clone().endOf('isoWeek');
+        this.fetchLightboxData();
+    }
+
+    public get selectedDailyDateObj(): Date {
+        return new Date(this.selectedDailyDate);
+    }
+
+    public get weekLabel(): string {
+        const start = this.weekStart.format('dddd D MMMM');
+        const end = this.weekEnd.format('dddd D MMMM');
+        return `du ${start} au ${end}`;
+    }
 }
 
+function fetchAllScreenTimeDataForUserAndDates($http: IHttpService, ctrl: Controller, userId: string, dailyDate: string, startDate: string, endDate: string): Promise<{ weekly: any, daily: any }> {
+    ctrl.children = fetchChildren(ctrl);
+
+    const weeklyEndpoint = `/appregistry/screen-time/${userId}/weekly?startDate=${startDate}&endDate=${endDate}&mock=false`;
+    const dailyEndpoint = `/appregistry/screen-time/${userId}/daily?date=${dailyDate}&mock=false`;
+
+    return Promise.all([
+        $http.get(weeklyEndpoint),
+        $http.get(dailyEndpoint)
+    ]).then(([weeklyResponse, dailyResponse]: [any, any]) => {
+        console.log("weekly: ", weeklyResponse.data);
+        console.log("daily: ", dailyResponse.data);
+        ctrl.hasError = false;
+        ctrl.errorMessage = "";
+        return {
+            weekly: weeklyResponse.data.dailySummaries.reduce((acc: any, day: any) => {
+                acc[day.date] = {
+                    duration: day.durationMinutes,
+                    schoolUsePercentage: day.schoolUsePercentage / 100 // convert to ratio
+                };
+                return acc;
+            }, {}),
+            daily: dailyResponse.data.durations.map((hour: any) => ({
+                hour: hour.hour,
+                duration: hour.durationMinutes,
+                schoolUsePercentage: hour.schoolUsePercentage / 100 // convert to ratio
+            }))
+        };
+    }).catch(error => {
+        ctrl.hasError = true;
+
+        if (error?.status === 404) {
+            ctrl.errorMessage = "Erreur lors de l’identification de l’utilisateur. Contactez l’administrateur de votre établissement.";
+        } else {
+            ctrl.errorMessage = "Un problème technique est survenu. Si le problème persiste contactez l’administrateur de votre établissement.";
+        }
+
+        console.error("Error fetching data for current user and dates:", error);
+        return Promise.reject(error);
+    });
+}
+
+function fetchChildren(ctrl: Controller) {
+    const childrenObj = session().user.children;
+    ctrl.isParent = false;
+
+    const USE_MOCK_IDS = true;
+
+    if (childrenObj && Object.keys(childrenObj).length > 0) {
+        ctrl.isParent = true;
+
+        // Replace userIds with mocked values: 100, 101, 102, ...
+        let mockIdCounter = 100;
+
+        return Object.entries(childrenObj).map(([userId, childData]) => {
+            const child = childData as { firstName: string; lastName: string };
+            const mockedId = (mockIdCounter++).toString(); // To remove and use real Id
+            return {
+                id: userId,
+                name: `${child.firstName} ${child.lastName}`,
+                userId: USE_MOCK_IDS ? mockedId : userId
+            };
+        });
+    } else {
+        return [];
+    }
+}
 
 class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]> {
     restrict = "E";
@@ -68,105 +199,323 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
     controllerAs = "ctrl";
     require = ["odeScreenTimeWidget"];
 
-    async link(scope: IScope, elem: angular.IAugmentedJQuery, attrs: IAttributes, controllers?: IController[]) {
+    link(scope: IScope, elem: angular.IAugmentedJQuery, attrs: IAttributes, controllers?: IController[]) {
         const ctrl: Controller | null = controllers ? (controllers[0] as Controller) : null;
         if (!ctrl) return;
 
-        let chartInstance: Chart | null = null;
-        let debounceTimeout: any;
+        const $http = angular.injector(["ng"]).get<IHttpService>("$http");
+        const currentUserId = session().user.userId;
 
-        // Wait for DOM render
-        scope.$evalAsync(() => {
+        ctrl.fetchDataForCurrentUser();
+
+        let chartInstance: Chart | null = null;
+
+        // Function to update the summary values from the pre-fetched weekly data
+        const updateSummary = (weeklyData: any) => {
+            let totalOnCampus = 0;
+            let totalOffCampus = 0;
+            let daysCount = 0;
+            const today = moment().format("YYYY-MM-DD");
+            let todayOnCampusTemp = 0;
+            let todayOffCampusTemp = 0;
+
+            let weeklyTotalSchoolUseDuration = 0;
+            let weeklyTotalOutOfSchoolDuration = 0;
+            let weeklyTotalOverallDuration = 0;
+
+            Object.keys(weeklyData).forEach(dateStr => {
+                const entry = weeklyData[dateStr];
+                const duration = entry.duration || 0;
+                const schoolUsePct = entry.schoolUsePercentage || 0;
+
+                const onCampus = duration * schoolUsePct;
+                const offCampus = duration * (1 - schoolUsePct);
+
+                totalOnCampus += onCampus;
+                totalOffCampus += offCampus;
+                daysCount++;
+
+                weeklyTotalSchoolUseDuration += onCampus;
+                weeklyTotalOutOfSchoolDuration += offCampus;
+                weeklyTotalOverallDuration += duration;
+
+                if (moment(dateStr).format("YYYY-MM-DD") === today) {
+                    todayOnCampusTemp = onCampus;
+                    todayOffCampusTemp = offCampus;
+                    ctrl.todaySchoolUsePercentage = entry.schoolUsePercentage * 100;
+                    ctrl.todayOutOfSchoolPercentage = 100 - (entry.schoolUsePercentage * 100);
+                }
+            });
+
+            ctrl.todayOnCampus = todayOnCampusTemp;
+            ctrl.todayOffCampus = todayOffCampusTemp;
+            ctrl.todayTotal = todayOnCampusTemp + todayOffCampusTemp;
+            ctrl.weeklyAvgOnCampus = daysCount > 0 ? totalOnCampus / daysCount : 0;
+            ctrl.weeklyAvgOffCampus = daysCount > 0 ? totalOffCampus / daysCount : 0;
+            ctrl.weeklyTotalAverage = ctrl.weeklyAvgOnCampus + ctrl.weeklyAvgOffCampus;
+
+            if (weeklyTotalOverallDuration > 0) {
+                ctrl.weeklyAvgSchoolUsePercentage = (weeklyTotalSchoolUseDuration / weeklyTotalOverallDuration) * 100;
+                ctrl.weeklyAvgOutOfSchoolPercentage = (weeklyTotalOutOfSchoolDuration / weeklyTotalOverallDuration) * 100;
+            } else {
+                ctrl.weeklyAvgSchoolUsePercentage = 0;
+                ctrl.weeklyAvgOutOfSchoolPercentage = 0;
+            }
+        };
+
+        // Helper to generate a unique key for caching data based on user and date range
+        const generateDataKey = (userId: string, dailyDate: string, startDate: string, endDate: string) => {
+            console.log("3");
+            return `${userId}_daily_${dailyDate}_weekly_${startDate}_${endDate}`;
+        };
+
+        // New function assigned to ctrl.fetchDataForCurrentUser to be called from HTML
+        ctrl.fetchDataForCurrentUser = () => {
+            ctrl.errorMessage = "";
+            ctrl.hasError = false;
+            const currentKey = generateDataKey(
+                ctrl.selectedUser,
+                moment().format('YYYY-MM-DD'), // Always use today's date for initial load
+                moment().startOf('isoWeek').format('YYYY-MM-DD'),
+                moment().endOf('isoWeek').format('YYYY-MM-DD')
+            );
+
+            // Fetch initial summary data (today and current week)
+            fetchAllScreenTimeDataForUserAndDates(
+                $http,
+                ctrl,
+                ctrl.selectedUser,
+                moment().format('YYYY-MM-DD'),
+                moment().startOf('isoWeek').format('YYYY-MM-DD'),
+                moment().endOf('isoWeek').format('YYYY-MM-DD')
+            ).then((data) => {
+                ctrl.userData[currentKey] = { weekly: data.weekly, daily: data.daily };
+                updateSummary(data.weekly); // Update the main summary values
+                scope.$applyAsync();
+            }).catch(error => {
+                scope.$applyAsync();
+                console.error("Error fetching initial data for current user:", error);
+            });
+        };
+
+        ctrl.fetchLightboxData = () => {
+
+            const userIdForLightbox = ctrl.selectedChildHistogram || ctrl.selectedUser;
+
+            if (!userIdForLightbox) return;
+
+            const currentKey = generateDataKey(
+                userIdForLightbox,
+                ctrl.selectedDailyDate,
+                ctrl.weekStart.format('YYYY-MM-DD'),
+                ctrl.weekEnd.format('YYYY-MM-DD')
+            );
+
+            // Check if data is already cached
+            if (ctrl.userData[currentKey]) {
+                if (ctrl.showLightbox) {
+                    setTimeout(() => ctrl.updateChart(), 50);
+                }
+            } else {
+                fetchAllScreenTimeDataForUserAndDates(
+                    $http,
+                    ctrl,
+                    userIdForLightbox,
+                    ctrl.selectedDailyDate,
+                    ctrl.weekStart.format('YYYY-MM-DD'),
+                    ctrl.weekEnd.format('YYYY-MM-DD')
+                ).then((data) => {
+                    ctrl.userData[currentKey] = { weekly: data.weekly, daily: data.daily };
+                    if (ctrl.showLightbox) {
+                        setTimeout(() => ctrl.updateChart(), 50);
+                    }
+                    scope.$applyAsync();
+                }).catch(error => {
+                    console.error("Error fetching data for lightbox:", error);
+                });
+            }
+        };
+
+        ctrl.updateChart = () => {
             const canvas = elem[0].querySelector<HTMLCanvasElement>("#myChart");
             if (!canvas) return;
+
             const ctx = canvas.getContext("2d");
             if (!ctx) return;
 
-            // Init blank chart first
+            if (chartInstance) chartInstance.destroy();
+
+            let labels: string[] = [];
+            let appTimes: number[] = [];
+            let otherTimes: number[] = [];
+
+            const userIdForChart = ctrl.selectedChildHistogram || ctrl.selectedUser;
+
+            // Use the dates from the lightbox controls for the chart data key
+            const currentDataKey = generateDataKey(
+                userIdForChart,
+                ctrl.selectedDailyDate,
+                ctrl.weekStart.format('YYYY-MM-DD'),
+                ctrl.weekEnd.format('YYYY-MM-DD')
+            );
+            const currentUserAndDateData = ctrl.userData[currentDataKey];
+
+            if (!currentUserAndDateData) return;
+
+            const dataToUse: any = ctrl.viewMode === "weekly" ? currentUserAndDateData.weekly : currentUserAndDateData.daily;
+            if (!dataToUse) return;
+
+            if (ctrl.viewMode === "weekly") {
+                const sortedDates = Object.keys(dataToUse).sort();
+
+                sortedDates.forEach(dateStr => {
+                    const entry = dataToUse[dateStr];
+                    labels.push(moment(dateStr).format("ddd D"));
+                    appTimes.push(entry.duration * entry.schoolUsePercentage);
+                    otherTimes.push(entry.duration * (1 - entry.schoolUsePercentage));
+                });
+            } else {
+                dataToUse.forEach((hourData: any) => {
+                    labels.push(`${hourData.hour}h`);
+                    appTimes.push(hourData.duration * hourData.schoolUsePercentage);
+                    otherTimes.push(hourData.duration * (1 - hourData.schoolUsePercentage));
+                });
+            }
+
             chartInstance = new Chart(ctx, {
                 type: "bar",
                 data: {
-                    labels: [],
-                    datasets: [{
-                        label: "",
-                        data: [],
-                        borderWidth: 1,
-                        backgroundColor: "#4e79a7"
-                    }]
+                    labels,
+                    datasets: [
+                        {
+                            label: "Usage scolaire",
+                            data: appTimes,
+                            backgroundColor: "#2A9CC8"
+                        },
+                        {
+                            label: "Usage hors scolaire",
+                            data: otherTimes,
+                            backgroundColor: "#ECBE30"
+                        }
+                    ]
                 },
                 options: {
-                    animation: false,
-                    responsive: true,
-                    maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: true
-                        },
                         tooltip: {
-                            enabled: false
+                            callbacks: {
+                                label: function (context) {
+                                    const value = context.raw;
+                                    return `${context.dataset.label}: ${value} minutes`;
+                                }
+                            }
                         }
                     },
+                    responsive: true,
                     scales: {
                         x: {
-                            ticks: {
-                                autoSkip: true,
-                                maxTicksLimit: 10
-                            }
+                            stacked: true
                         },
                         y: {
-                            beginAtZero: true
+                            stacked: true,
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: "Minutes"
+                            }
                         }
                     }
                 }
             });
+        };
 
-            // Fetch and update chart
-            fetchScreenTimeData().then((data) => {
-                ctrl.screenTimeData = data;
-                ctrl.updateChart();
-            });
+        ctrl.children = fetchChildren(ctrl);
 
-            ctrl.updateChart = () => {
-                if (!chartInstance) return;
+        // Determine the user whose data should be fetched on load
+        if (ctrl.isParent && ctrl.children.length > 0) {
+            // If a parent, and has children, default to the first child if no child is selected yet
+            if (!ctrl.selectedUser) {
+                ctrl.selectedUser = ctrl.children[0].userId;
+            }
+            ctrl.fetchDataForCurrentUser();
+        } else if (!ctrl.isParent && currentUserId) {
+            // If not a parent, and current user ID is available, fetch data for themselves
+            ctrl.selectedUser = currentUserId; // Set selectedUser to the current logged-in user's ID
+            ctrl.fetchDataForCurrentUser();
+        } else {
+            // No children AND no current user ID (or other error condition)
+            ctrl.hasError = true;
+            ctrl.errorMessage = "Aucun utilisateur disponible pour afficher les données de temps d'écran.";
+            scope.$applyAsync(); // Ensure the error message is displayed
+        }
 
-                requestAnimationFrame(() => {
-                    let labels: string[] = [];
-                    let values: number[] = [];
+        // Watch for changes in view mode (within lightbox): only updates the chart
+        scope.$watch(() => ctrl.viewMode, (newVal, oldVal) => {
+            if (newVal !== oldVal && ctrl.showLightbox) {
+                setTimeout(() => ctrl.updateChart(), 50);
+            }
+        });
+        // Watch for selectedUser changes within the lightbox to update chart data
+        scope.$watch(() => ctrl.selectedChildHistogram, (newVal, oldVal) => { // Changed from ctrl.selectedUser
+            if (newVal !== oldVal && ctrl.showLightbox) {
+                ctrl.fetchLightboxData();
+            }
+        });
 
-                    if (ctrl.viewMode === "weekly") {
-                        labels = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
-                        values = ctrl.screenTimeData.weekly[ctrl.selectedUser] || [];
-                    } else {
-                        const daily = ctrl.screenTimeData.daily[ctrl.selectedUser] || {};
-                        labels = Object.keys(daily);
-                        values = labels.map(hour => daily[hour]);
-                    }
-
-                    if (chartInstance) {
-                        chartInstance.data.labels = labels;
-                        chartInstance.data.datasets[0].data = values;
-                        chartInstance.data.datasets[0].label =
-                            ctrl.viewMode === "weekly"
-                                ? "Temps d'écran hebdo (heures)"
-                                : "Temps d'écran aujourd'hui (minutes)";
-                        chartInstance.update();
-                    }
-
-                });
-            };
-
-
-            // Watcher for view mode or user change (if you bind to select/input in HTML)
-            scope.$watch(() => ctrl.selectedUser, () => ctrl.updateChart());
-            scope.$watch(() => ctrl.viewMode, () => ctrl.updateChart());
+        // Watch for lightbox visibility changes
+        scope.$watch(() => ctrl.showLightbox, (isVisible: boolean) => {
+            if (isVisible) {
+                setTimeout(() => {
+                    ctrl.updateChart();
+                }, 100);
+            } else {
+                if (chartInstance) {
+                    chartInstance.destroy();
+                    chartInstance = null;
+                }
+            }
         });
     }
 }
 
+// Factory function for the directive
 function DirectiveFactory() {
     return new Directive();
 }
 
+// Define the module name
+export const odeModuleName = "odeCantineWidgetModule";
+
+// Angular module definition
+angular
+    .module(odeModuleName, [])
+    // Define the custom 'duration' filter
+    .filter('duration', function () {
+        return function (input: number) {
+            if (isNaN(input) || input === null || input < 0) {
+                return '0m';
+            }
+
+            const totalMinutes = Math.floor(input);
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+
+            let result = '';
+
+            if (hours > 0) {
+                result += `${hours}h`;
+            }
+            if (minutes > 0 || (hours === 0 && totalMinutes === 0)) {
+                result += `${minutes}m`;
+            }
+
+            return result.trim() || '0m';
+        };
+    })
+
+    // Register the directive
+    .directive("odeScreenTimeWidget", DirectiveFactory);
+
+// Internationalization setup
 notif()
     .onLangReady()
     .promise.then((lang) => {
@@ -176,9 +525,3 @@ notif()
                 break;
         }
     });
-
-export const odeModuleName = "odeCantineWidgetModule";
-
-angular
-    .module(odeModuleName, [])
-    .directive("odeScreenTimeWidget", DirectiveFactory);
