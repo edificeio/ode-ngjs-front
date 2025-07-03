@@ -20,7 +20,7 @@
   "carnet-de-bord.widget.new.homework": "Travail en",
   "carnet-de-bord.widget.nodata": "Aucune donnée disponible.",
   "carnet-de-bord.widget.of": "de",
-  "carnet-de-bord.widget.pronote.access.error": "Connexion Pronote impossible. Si le problème persiste, veuillez contacter l'administrateur de votre établissement.",
+  "carnet-de-bord.widget.pronote.access.error": "Nous avons rencontré un problème de communication avec le service Pronote.\nDemandez à l'administration de votre établissement de vérifier le paramétrage de Pronote.",
   "carnet-de-bord.widget.pronote.connection.error": "Problème de connexion au serveur Pronote",
   "carnet-de-bord.widget.pronote.unregistered.error": "Vous n'avez pas accès à l'application Pronote.",
   "carnet-de-bord.widget.pronote.uri.error": "L'adresse du serveur Pronote n’est pas correctement renseignée dans la console d’administration de l’ENT.",
