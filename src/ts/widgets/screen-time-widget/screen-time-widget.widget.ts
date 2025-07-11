@@ -22,8 +22,6 @@ export class Controller {
     public todayOnCampus = 0;
     public todayOffCampus = 0;
     public todayTotal = 0;
-    public todaySchoolUsePercentage: number = 0;
-    public todayOutOfSchoolPercentage: number = 0;
 
     public weeklyAvgOnCampus = 0;
     public weeklyAvgOffCampus = 0;
@@ -35,8 +33,6 @@ export class Controller {
     public fixedTodayOnCampus = 0;
     public fixedTodayOffCampus = 0;
     public fixedTodayTotal = 0;
-    public fixedTodaySchoolUsePercentage: number = 0;
-    public fixedTodayOutOfSchoolPercentage: number = 0;
 
     public fixedWeeklyAvgOnCampus = 0;
     public fixedWeeklyAvgOffCampus = 0;
@@ -83,8 +79,6 @@ export class Controller {
             this.fixedTodayOnCampus = this.todayOnCampus;
             this.fixedTodayOffCampus = this.todayOffCampus;
             this.fixedTodayTotal = this.todayTotal;
-            this.fixedTodaySchoolUsePercentage = this.todaySchoolUsePercentage;
-            this.fixedTodayOutOfSchoolPercentage = this.todayOutOfSchoolPercentage;
             this.fixedWeeklyAvgOnCampus = this.weeklyAvgOnCampus;
             this.fixedWeeklyAvgOffCampus = this.weeklyAvgOffCampus;
             this.fixedWeeklyTotalAverage = this.weeklyTotalAverage;
@@ -291,8 +285,6 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
                 if (moment(dateStr).format("YYYY-MM-DD") === today) {
                     todayOnCampusTemp = onCampus;
                     todayOffCampusTemp = offCampus;
-                    ctrl.todaySchoolUsePercentage = entry.schoolUsePercentage * 100;
-                    ctrl.todayOutOfSchoolPercentage = 100 - (entry.schoolUsePercentage * 100);
                 }
             });
 
@@ -387,8 +379,7 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
             if (chartInstance) chartInstance.destroy();
 
             let labels: string[] = [];
-            let appTimes: number[] = [];
-            let otherTimes: number[] = [];
+            let totalTimes: number[] = [];
 
             const userIdForChart = ctrl.selectedChildHistogram || ctrl.selectedUser;
 
@@ -409,17 +400,15 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
             if (ctrl.viewMode === "weekly") {
                 const sortedDates = Object.keys(dataToUse).sort();
 
-                sortedDates.forEach(dateStr => {
-                    const entry = dataToUse[dateStr];
-                    labels.push(moment(dateStr).format("ddd D"));
-                    appTimes.push(entry.duration * entry.schoolUsePercentage);
-                    otherTimes.push(entry.duration * (1 - entry.schoolUsePercentage));
-                });
+                sortedDates.forEach(dataStr => {
+                    const entry = dataToUse[dataStr];
+                    labels.push(moment(dataStr).format('ddd D'));
+                    totalTimes.push(entry.duration);
+                })
             } else {
                 dataToUse.forEach((hourData: any) => {
                     labels.push(`${hourData.hour}h`);
-                    appTimes.push(hourData.duration * hourData.schoolUsePercentage);
-                    otherTimes.push(hourData.duration * (1 - hourData.schoolUsePercentage));
+                    totalTimes.push(hourData.duration);
                 });
             }
 
@@ -429,14 +418,9 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
                     labels,
                     datasets: [
                         {
-                            label: "Usage scolaire",
-                            data: appTimes,
+                            label: "Usage total",
+                            data: totalTimes,
                             backgroundColor: "#2A9CC8"
-                        },
-                        {
-                            label: "Usage hors scolaire",
-                            data: otherTimes,
-                            backgroundColor: "#ECBE30"
                         }
                     ]
                 },

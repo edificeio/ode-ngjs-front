@@ -61,14 +61,6 @@
         border-radius: 5px;
     }
 
-    .au-college {
-        background-color: #2A9CC8;
-    }
-
-    .hors-college {
-        background-color: #ECBE30;
-    }
-
     .legend {
         display: flex;
         gap: 16px;
@@ -88,14 +80,6 @@
         width: 16px;
         height: 16px;
         border-radius: 4px;
-    }
-
-    .legend-au-college {
-        background-color: #2A9CC8;
-    }
-
-    .legend-hors-college {
-        background-color: #ECBE30;
     }
 
     .custom-select {
@@ -243,15 +227,6 @@
                 <div class="summary-block">
                     <div class="label">Aujourd'hui</div>
                     <div class="value">{{ ctrl.todayTotal | duration }}</div>
-
-                    <div class="percentage-bar-container">
-                        <div class="percentage-bar au-college" ng-style="{ width: ctrl.todaySchoolUsePercentage + '%' }"
-                            title="{{ ctrl.todaySchoolUsePercentage | duration }} au collège">
-                        </div>
-                        <div class="percentage-bar hors-college"
-                            ng-style="{ width: ctrl.todayOutOfSchoolPercentage + '%' }"
-                            title="{{ ctrl.todayOutOfSchoolPercentage | duration }} hors collège"></div>
-                    </div>
                 </div>
             </div>
 
@@ -259,28 +234,10 @@
                 <div class="summary-block">
                     <div class="label">Moyenne de la semaine</div>
                     <div class="value">{{ ctrl.weeklyTotalAverage | duration }}</div>
-
-                    <div class="percentage-bar-container">
-                        <div class="percentage-bar au-college"
-                            ng-style="{ width: ctrl.weeklyAvgSchoolUsePercentage + '%' }"
-                            title="{{ ctrl.weeklyAvgSchoolUsePercentage | duration }} au Collège">
-                        </div>
-                        <div class="percentage-bar hors-college"
-                            ng-style="{ width: ctrl.weeklyAvgOutOfSchoolPercentage + '%' }"
-                            title="{{ ctrl.weeklyAvgOutOfSchoolPercentage | duration}} hors collège"></div>
-                    </div>
                 </div>
             </div>
 
             <div class="legend">
-                <div class="legend-item">
-                    <div class="legend-square legend-au-college"></div>
-                    <span>Au collège</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-square legend-hors-college"></div>
-                    <span>Hors collège</span>
-                </div>
                 <div class="see-more">
                     <button ng-click="ctrl.toggleLightbox(true)">Voir le détail</button>
                 </div>
