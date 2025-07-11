@@ -100,6 +100,55 @@ export class Controller {
         }
     }
 
+    private getCurrentSchoolYear(): { schoolYearStart: moment.Moment, schoolYearEnd: moment.Moment } {
+        const today = moment();
+        const currentYear = today.year();
+        const currentMonth = today.month();
+
+        // If current month is less than september, school year is the previous one
+        const schoolYearStart = currentMonth < 8
+            ? moment({ year: currentYear - 1, month: 8, day: 1 }) // 1st september of previous school year
+            : moment({ year: currentYear, month: 8, day: 1 });    // 1st september of current school year
+
+        const schoolYearEnd = schoolYearStart
+            .clone()
+            .add(1, 'year')
+            .subtract(1, 'day'); // 31 august of next school year
+
+        return {
+            schoolYearStart: schoolYearStart.startOf('day'),
+            schoolYearEnd: schoolYearEnd.endOf('day'),
+        };
+    }
+
+   public canGoToPreviousWeek(): boolean {
+        const offsetWeekStart = this.weekStart.clone().subtract(1, 'week');
+        const { schoolYearStart, schoolYearEnd } = this.getCurrentSchoolYear();
+
+        return offsetWeekStart.isBetween(schoolYearStart, schoolYearEnd);
+   }
+
+   public canGoToNextWeek(): boolean {
+       const offsetWeekStart = this.weekStart.clone().add(1, 'week');
+       const { schoolYearStart, schoolYearEnd } = this.getCurrentSchoolYear();
+
+       return offsetWeekStart.isBetween(schoolYearStart, schoolYearEnd);
+   }
+
+   public canGoToPreviousDay(): boolean {
+        const offsetDayStart = moment(this.selectedDailyDate).subtract(1, 'day');
+        const { schoolYearStart, schoolYearEnd } = this.getCurrentSchoolYear();
+
+        return offsetDayStart.isBetween(schoolYearStart, schoolYearEnd);
+   }
+
+    public canGoToNextDay(): boolean {
+        const offsetDayStart = moment(this.selectedDailyDate).add(1, 'day');
+        const { schoolYearStart, schoolYearEnd } = this.getCurrentSchoolYear();
+
+        return offsetDayStart.isBetween(schoolYearStart, schoolYearEnd);
+    }
+
     public changeDay(offset: number) {
         this.selectedDailyDate = moment(this.selectedDailyDate).add(offset, 'days').format('YYYY-MM-DD');
         this.fetchLightboxData();
