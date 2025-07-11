@@ -9,11 +9,14 @@ moment.locale('fr');
 
 // Controller
 export class Controller {
+    public platform = conf().Platform;
+    public lang = this.platform.idiom;
     public selectedUser: string = "";
     public viewMode: "weekly" | "daily" = "weekly";
 
     public userData: { [key: string]: { weekly: any, daily: any } } = {};
     public selectedDailyDate: string = moment().format('YYYY-MM-DD');
+    public tempDailyDate: string = moment().format('YYYY-MM-DD');
     public weekStart: Moment = moment().startOf('isoWeek'); // Monday
     public weekEnd: Moment = moment().endOf('isoWeek');     // Sunday
 
@@ -22,8 +25,6 @@ export class Controller {
     public todayOnCampus = 0;
     public todayOffCampus = 0;
     public todayTotal = 0;
-    public todaySchoolUsePercentage: number = 0;
-    public todayOutOfSchoolPercentage: number = 0;
 
     public weeklyAvgOnCampus = 0;
     public weeklyAvgOffCampus = 0;
@@ -35,8 +36,6 @@ export class Controller {
     public fixedTodayOnCampus = 0;
     public fixedTodayOffCampus = 0;
     public fixedTodayTotal = 0;
-    public fixedTodaySchoolUsePercentage: number = 0;
-    public fixedTodayOutOfSchoolPercentage: number = 0;
 
     public fixedWeeklyAvgOnCampus = 0;
     public fixedWeeklyAvgOffCampus = 0;
@@ -68,12 +67,46 @@ export class Controller {
 
     public toggleDatePicker(show: boolean) {
         this.showDatePicker = show;
+        if (show) {
+            this.tempDailyDate = this.selectedDailyDate;
+            // Use $timeout to ensure the input shows the correct value after DOM update
+            setTimeout(() => {
+                if (this.tempDailyDate) {
+                    // Force Angular to update the input value
+                    const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
+                    if (dateInput) {
+                        dateInput.value = this.tempDailyDate;
+                    }
+                }
+            }, 0);
+        }
     }
 
     public setDateFromPicker(date: string) {
-        this.selectedDailyDate = moment(date).format('YYYY-MM-DD');
+        const newDate = moment(date).format('YYYY-MM-DD');
         this.showDatePicker = false;
+        this.setSelectedDate(newDate);
         this.fetchLightboxData();
+    }
+
+    public commitTempDate() {
+        const newDate = moment(this.tempDailyDate).format('YYYY-MM-DD');
+        // Validate that the date is valid before committing
+        if (moment(newDate).isValid()) {
+            this.setSelectedDate(newDate);
+            this.showDatePicker = false;
+            this.fetchLightboxData();
+        } else {
+            // If invalid date, reset to current selected date and close picker
+            this.tempDailyDate = this.selectedDailyDate;
+            this.showDatePicker = false;
+        }
+    }
+    
+    public tempDateHandleKeyPress(event: any) {
+      if (event.key === "Enter") {
+        this.commitTempDate();
+      }
     }
 
     public toggleLightbox(show: boolean) {
@@ -83,31 +116,112 @@ export class Controller {
             this.fixedTodayOnCampus = this.todayOnCampus;
             this.fixedTodayOffCampus = this.todayOffCampus;
             this.fixedTodayTotal = this.todayTotal;
-            this.fixedTodaySchoolUsePercentage = this.todaySchoolUsePercentage;
-            this.fixedTodayOutOfSchoolPercentage = this.todayOutOfSchoolPercentage;
             this.fixedWeeklyAvgOnCampus = this.weeklyAvgOnCampus;
             this.fixedWeeklyAvgOffCampus = this.weeklyAvgOffCampus;
             this.fixedWeeklyTotalAverage = this.weeklyTotalAverage;
             this.fixedWeeklyAvgSchoolUsePercentage = this.weeklyAvgSchoolUsePercentage;
             this.fixedWeeklyAvgOutOfSchoolPercentage = this.weeklyAvgOutOfSchoolPercentage;
 
-            // Initialize lightbox dates to current date/week
-            this.selectedDailyDate = moment().format('YYYY-MM-DD');
-            this.weekStart = moment().startOf('isoWeek');
-            this.weekEnd = moment().endOf('isoWeek');
+            // Initialize lightbox dates to current date/week only if not already set
+            if (!this.selectedDailyDate) {
+                this.selectedDailyDate = moment().format('YYYY-MM-DD');
+            }
+            if (!this.weekStart || !this.weekEnd) {
+                this.weekStart = moment().startOf('isoWeek');
+                this.weekEnd = moment().endOf('isoWeek');
+            }
             this.selectedChildHistogram = this.selectedUser;
 
         }
     }
 
+    private getCurrentSchoolYear(): { schoolYearStart: moment.Moment, schoolYearEnd: moment.Moment } {
+        const today = moment();
+        const currentYear = today.year();
+        const currentMonth = today.month();
+
+        // If current month is less than september, school year is the previous one
+        const schoolYearStart = currentMonth < 8
+            ? moment({ year: currentYear - 1, month: 8, day: 1 }) // 1st september of previous school year
+            : moment({ year: currentYear, month: 8, day: 1 });    // 1st september of current school year
+
+        const schoolYearEnd = schoolYearStart
+            .clone()
+            .add(1, 'year')
+            .subtract(1, 'day'); // 31 august of next school year
+
+        return {
+            schoolYearStart: schoolYearStart.startOf('day'),
+            schoolYearEnd: schoolYearEnd.endOf('day'),
+        };
+    }
+
+    private setSelectedDate(date: string | moment.Moment) {
+        const momentDate = moment(date);
+
+        this.selectedDailyDate = momentDate.format('YYYY-MM-DD');
+
+        this.weekStart = momentDate.clone().startOf('isoWeek');
+        this.weekEnd = momentDate.clone().endOf('isoWeek');
+    }
+
+    private setSelectedWeek(weekStart: moment.Moment) {
+        this.weekStart = weekStart.clone().startOf('isoWeek');
+        this.weekEnd = this.weekStart.clone().endOf('isoWeek');
+
+        this.selectedDailyDate = this.weekStart.format('YYYY-MM-DD');
+    }
+
+   public canGoToPreviousWeek(): boolean {
+        const offsetWeekStart = this.weekStart.clone().subtract(1, 'week');
+        const { schoolYearStart, schoolYearEnd } = this.getCurrentSchoolYear();
+
+        return offsetWeekStart.isBetween(schoolYearStart, schoolYearEnd);
+   }
+
+   public canGoToNextWeek(): boolean {
+       const offsetWeekStart = this.weekStart.clone().add(1, 'week');
+       const { schoolYearStart, schoolYearEnd } = this.getCurrentSchoolYear();
+
+       return offsetWeekStart.isBetween(schoolYearStart, schoolYearEnd);
+   }
+
+   public canGoToPreviousDay(): boolean {
+        const offsetDayStart = moment(this.selectedDailyDate).subtract(1, 'day');
+        const { schoolYearStart, schoolYearEnd } = this.getCurrentSchoolYear();
+
+        return offsetDayStart.isBetween(schoolYearStart, schoolYearEnd);
+   }
+
+    public canGoToNextDay(): boolean {
+        const offsetDayStart = moment(this.selectedDailyDate).add(1, 'day');
+        const { schoolYearStart, schoolYearEnd } = this.getCurrentSchoolYear();
+
+        return offsetDayStart.isBetween(schoolYearStart, schoolYearEnd);
+    }
+
     public changeDay(offset: number) {
-        this.selectedDailyDate = moment(this.selectedDailyDate).add(offset, 'days').format('YYYY-MM-DD');
+        const newDate = moment(this.selectedDailyDate).add(offset, 'days');
+        this.setSelectedDate(newDate);
+        // Always keep tempDailyDate in sync with selectedDailyDate
+        this.tempDailyDate = this.selectedDailyDate;
         this.fetchLightboxData();
+        // Force Angular to update the binding if date picker is open
+        if (this.showDatePicker) {
+            // Use setTimeout to ensure Angular processes the change
+            setTimeout(() => {
+                // Force the date input to update its value
+                const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
+                if (dateInput) {
+                    dateInput.value = this.tempDailyDate;
+                }
+            }, 0);
+        }
     }
 
     public changeWeek(offset: number) {
-        this.weekStart = this.weekStart.clone().add(offset, 'weeks');
-        this.weekEnd = this.weekStart.clone().endOf('isoWeek');
+        const newWeekStart = this.weekStart.clone().add(offset, 'weeks');
+        this.setSelectedWeek(newWeekStart);
         this.fetchLightboxData();
     }
 
@@ -115,25 +229,31 @@ export class Controller {
         return new Date(this.selectedDailyDate);
     }
 
+    public get selectedDailyDateLabel(): string {
+        return moment(this.selectedDailyDate).format('dddd D MMMM YYYY');
+    }
+
     public get weekLabel(): string {
         const start = this.weekStart.format('dddd D MMMM');
         const end = this.weekEnd.format('dddd D MMMM');
-        return `du ${start} au ${end}`;
+
+        const fromText = this.lang.translate("screenTime.from");
+        const toText = this.lang.translate("screenTime.to");
+
+        return `${fromText} ${start} ${toText} ${end}`;
     }
 }
 
 function fetchAllScreenTimeDataForUserAndDates($http: IHttpService, ctrl: Controller, userId: string, dailyDate: string, startDate: string, endDate: string): Promise<{ weekly: any, daily: any }> {
     ctrl.children = fetchChildren(ctrl);
 
-    const weeklyEndpoint = `/appregistry/screen-time/${userId}/weekly?startDate=${startDate}&endDate=${endDate}&mock=false`;
-    const dailyEndpoint = `/appregistry/screen-time/${userId}/daily?date=${dailyDate}&mock=false`;
+    const weeklyEndpoint = `/appregistry/screen-time/${userId}/weekly?startDate=${startDate}&endDate=${endDate}`;
+    const dailyEndpoint = `/appregistry/screen-time/${userId}/daily?date=${dailyDate}`;
 
     return Promise.all([
         $http.get(weeklyEndpoint),
         $http.get(dailyEndpoint)
     ]).then(([weeklyResponse, dailyResponse]: [any, any]) => {
-        console.log("weekly: ", weeklyResponse.data);
-        console.log("daily: ", dailyResponse.data);
         ctrl.hasError = false;
         ctrl.errorMessage = "";
         return {
@@ -154,9 +274,9 @@ function fetchAllScreenTimeDataForUserAndDates($http: IHttpService, ctrl: Contro
         ctrl.hasError = true;
 
         if (error?.status === 404) {
-            ctrl.errorMessage = "Erreur lors de l’identification de l’utilisateur. Contactez l’administrateur de votre établissement.";
+            ctrl.errorMessage = ctrl.lang.translate("screenTime.error.404");
         } else {
-            ctrl.errorMessage = "Un problème technique est survenu. Si le problème persiste contactez l’administrateur de votre établissement.";
+            ctrl.errorMessage = ctrl.lang.translate("screenTime.error.generic");
         }
 
         console.error("Error fetching data for current user and dates:", error);
@@ -168,21 +288,15 @@ function fetchChildren(ctrl: Controller) {
     const childrenObj = session().user.children;
     ctrl.isParent = false;
 
-    const USE_MOCK_IDS = true;
-
     if (childrenObj && Object.keys(childrenObj).length > 0) {
         ctrl.isParent = true;
 
-        // Replace userIds with mocked values: 100, 101, 102, ...
-        let mockIdCounter = 100;
-
         return Object.entries(childrenObj).map(([userId, childData]) => {
             const child = childData as { firstName: string; lastName: string };
-            const mockedId = (mockIdCounter++).toString(); // To remove and use real Id
             return {
                 id: userId,
                 name: `${child.firstName} ${child.lastName}`,
-                userId: USE_MOCK_IDS ? mockedId : userId
+                userId:   userId
             };
         });
     } else {
@@ -242,8 +356,6 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
                 if (moment(dateStr).format("YYYY-MM-DD") === today) {
                     todayOnCampusTemp = onCampus;
                     todayOffCampusTemp = offCampus;
-                    ctrl.todaySchoolUsePercentage = entry.schoolUsePercentage * 100;
-                    ctrl.todayOutOfSchoolPercentage = 100 - (entry.schoolUsePercentage * 100);
                 }
             });
 
@@ -335,11 +447,8 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
             const ctx = canvas.getContext("2d");
             if (!ctx) return;
 
-            if (chartInstance) chartInstance.destroy();
-
             let labels: string[] = [];
-            let appTimes: number[] = [];
-            let otherTimes: number[] = [];
+            let totalTimes: number[] = [];
 
             const userIdForChart = ctrl.selectedChildHistogram || ctrl.selectedUser;
 
@@ -360,49 +469,45 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
             if (ctrl.viewMode === "weekly") {
                 const sortedDates = Object.keys(dataToUse).sort();
 
-                sortedDates.forEach(dateStr => {
-                    const entry = dataToUse[dateStr];
-                    labels.push(moment(dateStr).format("ddd D"));
-                    appTimes.push(entry.duration * entry.schoolUsePercentage);
-                    otherTimes.push(entry.duration * (1 - entry.schoolUsePercentage));
-                });
+                sortedDates.forEach(dataStr => {
+                    const entry = dataToUse[dataStr];
+                    labels.push(moment(dataStr).format('ddd D'));
+                    totalTimes.push(entry.duration / 60);
+                })
             } else {
                 dataToUse.forEach((hourData: any) => {
                     labels.push(`${hourData.hour}h`);
-                    appTimes.push(hourData.duration * hourData.schoolUsePercentage);
-                    otherTimes.push(hourData.duration * (1 - hourData.schoolUsePercentage));
+                    totalTimes.push(hourData.duration);
                 });
             }
 
-            chartInstance = new Chart(ctx, {
-                type: "bar",
-                data: {
-                    labels,
-                    datasets: [
-                        {
-                            label: "Usage scolaire",
-                            data: appTimes,
-                            backgroundColor: "#2A9CC8"
-                        },
-                        {
-                            label: "Usage hors scolaire",
-                            data: otherTimes,
-                            backgroundColor: "#ECBE30"
-                        }
-                    ]
-                },
-                options: {
+            // If the chart already exists, we simply update it
+            if (chartInstance) {
+                chartInstance.data.labels = labels;
+                chartInstance.data.datasets[0].data = totalTimes;
+
+                chartInstance.options = {
                     plugins: {
                         tooltip: {
                             callbacks: {
                                 label: function (context) {
-                                    const value = context.raw;
-                                    return `${context.dataset.label}: ${value} minutes`;
+                                    const value = context.raw as number;
+                                    if (ctrl.viewMode === "weekly") {
+                                        // Convert decimal hours to hours and minutes
+                                        const hours = Math.floor(value);
+                                        const minutes = Math.round((value - hours) * 60);
+                                        if (minutes === 0) {
+                                            return `${context.dataset.label}: ${hours}h`;
+                                        } else {
+                                            return `${context.dataset.label}: ${hours}h ${minutes}m`;
+                                        }
+                                    } else {
+                                        return `${context.dataset.label}: ${value} ${ctrl.lang.translate("screenTime.minutes")}`;
+                                    }
                                 }
                             }
                         }
                     },
-                    responsive: true,
                     scales: {
                         x: {
                             stacked: true
@@ -412,12 +517,69 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: "Minutes"
+                                text: ctrl.viewMode === "weekly" ? ctrl.lang.translate("screenTime.hours") : ctrl.lang.translate("screenTime.minutes"),
                             }
                         }
                     }
                 }
-            });
+
+                chartInstance.update();
+            } else {
+                chartInstance = new Chart(ctx, {
+                    type: "bar",
+                    data: {
+                        labels,
+                        datasets: [
+                            {
+                                label: ctrl.lang.translate("screenTime.totalUsage"),
+                                data: totalTimes,
+                                backgroundColor: "#2A9CC8"
+                            }
+                        ]
+                    },
+                    options: {
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        const value = context.raw as number;
+                                        if (ctrl.viewMode === "weekly") {
+                                            // Convert decimal hours to hours and minutes
+                                            const hours = Math.floor(value);
+                                            const minutes = Math.round((value - hours) * 60);
+                                            if (minutes === 0) {
+                                                return `${context.dataset.label}: ${hours}h`;
+                                            } else {
+                                                return `${context.dataset.label}: ${hours}h ${minutes}m`;
+                                            }
+                                        } else {
+                                            return `${context.dataset.label}: ${value} ${ctrl.lang.translate("screenTime.minutes")}`;
+                                        }
+                                    }
+                                }
+                            },
+                            legend: {
+                                display: false,
+                                position: "bottom"
+                            }
+                        },
+                        responsive: true,
+                        scales: {
+                            x: {
+                                stacked: true
+                            },
+                            y: {
+                                stacked: true,
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: ctrl.viewMode === "weekly" ? ctrl.lang.translate("screenTime.hours") : ctrl.lang.translate("screenTime.minutes"),
+                                }
+                            }
+                        }
+                    }
+                });
+            }
         };
 
         ctrl.children = fetchChildren(ctrl);
@@ -436,7 +598,7 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
         } else {
             // No children AND no current user ID (or other error condition)
             ctrl.hasError = true;
-            ctrl.errorMessage = "Aucun utilisateur disponible pour afficher les données de temps d'écran.";
+            ctrl.errorMessage = ctrl.lang.translate("screenTime.error.noUser");
             scope.$applyAsync(); // Ensure the error message is displayed
         }
 
@@ -515,11 +677,31 @@ angular
     // Register the directive
     .directive("odeScreenTimeWidget", DirectiveFactory);
 
+function setupMomentLocale(lang: string) {
+    try {
+        if (lang === "en") {
+            require('moment/locale/en-gb');
+            moment.locale('en-gb');
+        } else {
+            require('moment/locale/fr');
+            moment.locale('fr');
+        }
+    } catch (error) {
+        console.warn('Failed to load moment locale:', error);
+        moment.locale('fr');
+    }
+}
+
 // Internationalization setup
 notif()
     .onLangReady()
     .promise.then((lang) => {
+        setupMomentLocale(lang);
+
         switch (lang) {
+            case "en":
+                conf().Platform.idiom.addKeys(require("./i18n/en.json"));
+                break;
             default:
                 conf().Platform.idiom.addKeys(require("./i18n/fr.json"));
                 break;
