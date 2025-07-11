@@ -201,6 +201,11 @@
         cursor: pointer;
     }
 
+    .date-navigation button:disabled {
+        color: lightgray;
+        cursor: not-allowed;
+    }
+
     .selected-date {
         cursor: pointer;
         font-weight: bold;
@@ -309,7 +314,7 @@
 
                 <!-- DAILY MODE: show only if viewMode is 'daily' -->
                 <div class="date-navigation" ng-if="ctrl.viewMode === 'daily'">
-                    <button ng-click="ctrl.changeDay(-1)">←</button>
+                    <button ng-click="ctrl.changeDay(-1)" ng-disabled="!ctrl.canGoToPreviousDay()">←</button>
 
                     <!-- Show selected date text or datepicker -->
                     <div ng-if="!ctrl.showDatePicker" class="selected-date" ng-click="ctrl.toggleDatePicker(true)">
@@ -320,14 +325,14 @@
                         ng-change="ctrl.setDateFromPicker(ctrl.selectedDailyDate)"
                         ng-blur="ctrl.toggleDatePicker(false)" max="{{ ctrl.selectedDailyDate }}" />
 
-                    <button ng-click="ctrl.changeDay(1)">→</button>
+                    <button ng-click="ctrl.changeDay(1)" ng-disabled="!ctrl.canGoToNextDay()">→</button>
                 </div>
 
                 <!-- WEEKLY MODE: only show week arrows and label -->
                 <div class="date-navigation" ng-if="ctrl.viewMode === 'weekly'">
-                    <button ng-click="ctrl.changeWeek(-1)">←</button>
+                    <button ng-click="ctrl.changeWeek(-1)" ng-disabled="!ctrl.canGoToPreviousWeek()">←</button>
                     <div class="selected-date">{{ ctrl.weekLabel }}</div>
-                    <button ng-click="ctrl.changeWeek(1)">→</button>
+                    <button ng-click="ctrl.changeWeek(1)" ng-disabled="!ctrl.canGoToNextWeek()">→</button>
                 </div>
 
             </div>
