@@ -67,8 +67,9 @@ export class Controller {
     }
 
     public setDateFromPicker(date: string) {
-        this.selectedDailyDate = moment(date).format('YYYY-MM-DD');
+        const newDate = moment(date).format('YYYY-MM-DD');
         this.showDatePicker = false;
+        this.setSelectedDate(newDate);
         this.fetchLightboxData();
     }
 
@@ -115,6 +116,22 @@ export class Controller {
         };
     }
 
+    private setSelectedDate(date: string | moment.Moment) {
+        const momentDate = moment(date);
+
+        this.selectedDailyDate = momentDate.format('YYYY-MM-DD');
+
+        this.weekStart = momentDate.clone().startOf('isoWeek');
+        this.weekEnd = momentDate.clone().endOf('isoWeek');
+    }
+
+    private setSelectedWeek(weekStart: moment.Moment) {
+        this.weekStart = weekStart.clone().startOf('isoWeek');
+        this.weekEnd = this.weekStart.clone().endOf('isoWeek');
+
+        this.selectedDailyDate = this.weekStart.format('YYYY-MM-DD');
+    }
+
    public canGoToPreviousWeek(): boolean {
         const offsetWeekStart = this.weekStart.clone().subtract(1, 'week');
         const { schoolYearStart, schoolYearEnd } = this.getCurrentSchoolYear();
@@ -144,13 +161,14 @@ export class Controller {
     }
 
     public changeDay(offset: number) {
-        this.selectedDailyDate = moment(this.selectedDailyDate).add(offset, 'days').format('YYYY-MM-DD');
+        const newDate = moment(this.selectedDailyDate).add(offset, 'days');
+        this.setSelectedDate(newDate);
         this.fetchLightboxData();
     }
 
     public changeWeek(offset: number) {
-        this.weekStart = this.weekStart.clone().add(offset, 'weeks');
-        this.weekEnd = this.weekStart.clone().endOf('isoWeek');
+        const newWeekStart = this.weekStart.clone().add(offset, 'weeks');
+        this.setSelectedWeek(newWeekStart);
         this.fetchLightboxData();
     }
 
