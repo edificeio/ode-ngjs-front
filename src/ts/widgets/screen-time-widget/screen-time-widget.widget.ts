@@ -395,8 +395,6 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
             const ctx = canvas.getContext("2d");
             if (!ctx) return;
 
-            if (chartInstance) chartInstance.destroy();
-
             let labels: string[] = [];
             let totalTimes: number[] = [];
 
@@ -431,45 +429,52 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
                 });
             }
 
-            chartInstance = new Chart(ctx, {
-                type: "bar",
-                data: {
-                    labels,
-                    datasets: [
-                        {
-                            label: "Usage total",
-                            data: totalTimes,
-                            backgroundColor: "#2A9CC8"
-                        }
-                    ]
-                },
-                options: {
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function (context) {
-                                    const value = context.raw;
-                                    return `${context.dataset.label}: ${value} minutes`;
+            // If the chart already exists, we simply update it
+            if (chartInstance) {
+                chartInstance.data.labels = labels;
+                chartInstance.data.datasets[0].data = totalTimes;
+                chartInstance.update('active');
+            } else {
+                chartInstance = new Chart(ctx, {
+                    type: "bar",
+                    data: {
+                        labels,
+                        datasets: [
+                            {
+                                label: "Usage total",
+                                data: totalTimes,
+                                backgroundColor: "#2A9CC8"
+                            }
+                        ]
+                    },
+                    options: {
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        const value = context.raw;
+                                        return `${context.dataset.label}: ${value} minutes`;
+                                    }
+                                }
+                            }
+                        },
+                        responsive: true,
+                        scales: {
+                            x: {
+                                stacked: true
+                            },
+                            y: {
+                                stacked: true,
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: "Minutes"
                                 }
                             }
                         }
-                    },
-                    responsive: true,
-                    scales: {
-                        x: {
-                            stacked: true
-                        },
-                        y: {
-                            stacked: true,
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: "Minutes"
-                            }
-                        }
                     }
-                }
-            });
+                });
+            }
         };
 
         ctrl.children = fetchChildren(ctrl);
