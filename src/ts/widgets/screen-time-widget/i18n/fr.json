@@ -1,1 +1,12 @@
-{}
+{
+  "screenTime.title.normal": "Temps d'écran",
+  "screenTime.title.uppercase": "TEMPS D'ÉCRAN",
+  "screenTime.today": "Aujourd'hui",
+  "screenTime.weekAverage": "Moyenne de la semaine",
+  "screenTime.displayDetails": "Voir le détail",
+  "screenTime.user": "Utilisateur",
+  "screenTime.viewMode": "Affichage",
+  "screenTime.viewMode.weekly": "Hebdomadaire",
+  "screenTime.viewMode.daily": "Quotidien",
+  "screenTime.modal.close": "Fermer"
+}

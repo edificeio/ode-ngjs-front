@@ -9,6 +9,8 @@ moment.locale('fr');
 
 // Controller
 export class Controller {
+    public platform = conf().Platform;
+    public lang = this.platform.idiom;
     public selectedUser: string = "";
     public viewMode: "weekly" | "daily" = "weekly";
 
