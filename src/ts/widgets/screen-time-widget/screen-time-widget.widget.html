@@ -222,13 +222,15 @@
 <div class="screen-time-widget-container">
     <div class="screen-time-summary">
         <div class="title">
-            <div class="label">TEMPS D'ÉCRAN</div>
+            <div class="label">
+                <i18n>screenTime.title.uppercase</i18n>
+            </div>
         </div>
 
         <div ng-if="ctrl.isParent">
             <select id="userSelect" class="custom-select" ng-model="ctrl.selectedUser"
-                ng-options="child.userId as child.name for child in ctrl.children"
-                ng-change="ctrl.fetchDataForCurrentUser()">
+                    ng-options="child.userId as child.name for child in ctrl.children"
+                    ng-change="ctrl.fetchDataForCurrentUser()">
             </select>
         </div>
 
@@ -238,21 +240,27 @@
         <div ng-if="!ctrl.errorMessage">
             <div class="summary-row">
                 <div class="summary-block">
-                    <div class="label">Aujourd'hui</div>
+                    <div class="label">
+                        <i18n>screenTime.today</i18n>
+                    </div>
                     <div class="value">{{ ctrl.todayTotal | duration }}</div>
                 </div>
             </div>
 
             <div class="summary-row">
                 <div class="summary-block">
-                    <div class="label">Moyenne de la semaine</div>
+                    <div class="label">
+                        <i18n>screenTime.weekAverage</i18n>
+                    </div>
                     <div class="value">{{ ctrl.weeklyTotalAverage | duration }}</div>
                 </div>
             </div>
 
             <div class="legend">
                 <div class="see-more">
-                    <button ng-click="ctrl.toggleLightbox(true)">Voir le détail</button>
+                    <button ng-click="ctrl.toggleLightbox(true)">
+                        <i18n>screenTime.displayDetails</i18n>
+                    </button>
                 </div>
             </div>
         </div>
@@ -260,24 +268,34 @@
 
     <ode-modal visible="ctrl.showLightbox" on-close="ctrl.toggleLightbox(false)" size="lg" dnd-nodrag>
         <ode-modal-title>
-            <h2>Temps d'écran</h2>
+            <h2>
+                <i18n>screenTime.title.normal</i18n>
+            </h2>
         </ode-modal-title>
 
         <ode-modal-body>
             <div class="view-controls">
                 <div class="control-group">
-                    <label style="font-size: 14px;" for="userSelect">Utilisateur :</label>
+                    <label style="font-size: 14px;" for="userSelect">
+                        <i18n>screenTime.user</i18n>
+                        :</label>
                     <div ng-if="ctrl.isParent">
                         <select id="userSelect" class="custom-select" ng-model="ctrl.selectedChildHistogram"
-                            ng-options="child.userId as child.name for child in ctrl.children"> </select>
+                                ng-options="child.userId as child.name for child in ctrl.children"> </select>
                     </div>
                 </div>
 
                 <div class="control-group">
-                    <label for="viewMode">Affichage :</label>
+                    <label for="viewMode">
+                        <i18n>screenTime.viewMode</i18n>
+                        :</label>
                     <select id="viewMode" class="custom-select" ng-model="ctrl.viewMode" ng-change="ctrl.updateChart()">
-                        <option value="weekly">Hebdomadaire</option>
-                        <option value="daily">Quotidien</option>
+                        <option value="weekly">
+                            [[ctrl.lang.translate("screenTime.viewMode.weekly")]]
+                        </option>
+                        <option value="daily">
+                            [[ctrl.lang.translate("screenTime.viewMode.daily")]]
+                        </option>
                     </select>
                 </div>
             </div>
@@ -296,8 +314,8 @@
                     </div>
 
                     <input type="date" ng-if="ctrl.showDatePicker" ng-model="ctrl.selectedDailyDate"
-                        ng-change="ctrl.setDateFromPicker(ctrl.selectedDailyDate)"
-                        ng-blur="ctrl.toggleDatePicker(false)" max="{{ ctrl.selectedDailyDate }}" />
+                           ng-change="ctrl.setDateFromPicker(ctrl.selectedDailyDate)"
+                           ng-blur="ctrl.toggleDatePicker(false)" max="{{ ctrl.selectedDailyDate }}"/>
 
                     <button ng-click="ctrl.changeDay(1)" ng-disabled="!ctrl.canGoToNextDay()">→</button>
                 </div>
@@ -313,7 +331,9 @@
 
 
             <div class="close-button-container">
-                <button class="close-button" ng-click="ctrl.toggleLightbox(false)">Fermer</button>
+                <button class="close-button" ng-click="ctrl.toggleLightbox(false)">
+                    <i18n>screenTime.modal.close</i18n>
+                </button>
             </div>
         </ode-modal-body>
     </ode-modal>
