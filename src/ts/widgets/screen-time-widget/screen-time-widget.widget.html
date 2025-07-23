@@ -15,6 +15,11 @@
         border-bottom: 1px solid #e0e0e0;
     }
 
+    .modal-title {
+        display: block;
+        width: 100%;
+    }
+
     .modal-body {
         margin: 1rem 0 !important;
     }
@@ -140,7 +145,7 @@
         display: flex;
         width: 100%;
         flex-direction: row;
-        justify-content: flex-end;
+        justify-content: space-between;
         margin-bottom: 16px;
     }
 
@@ -221,6 +226,20 @@
         font-size: 14px;
         font-weight: 500;
     }
+
+    .info-popover {
+        position: absolute;
+        z-index: 10;
+        display: block;
+        width: 90%;
+        background-color: white;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 4px 6px 0 rgba(0, 0, 0, 0.08);
+        font-size: 1.5rem;
+        line-height: 1.8;
+        padding: 1rem;
+        border-radius: 6px;
+    }
 </style>
 
 <div class="screen-time-widget-container">
@@ -271,9 +290,28 @@
     </div>
 
     <ode-modal visible="ctrl.showLightbox" on-close="ctrl.toggleLightbox(false)" size="lg" dnd-nodrag>
-        <ode-modal-title>
+        <ode-modal-title class="modal-title">
             <h2>
                 <i18n>screenTime.title.normal</i18n>
+                <popover>
+                    <popover-opener ><i class="fa-solid fa-circle-info"></i></popover-opener>
+                    <popover-content class="info-popover">
+                        <ul>
+                            <li>
+                                <i18n>screenTime.information.first</i18n>
+                            </li>
+                            <li>
+                                <i18n>screenTime.information.second</i18n>
+                            </li>
+                            <li>
+                                <i18n>screenTime.information.third</i18n>
+                            </li>
+                            <li>
+                                <i18n>screenTime.information.fourth</i18n>
+                            </li>
+                        </ul>
+                    </popover-content>
+                </popover>
             </h2>
 
             <div class="view-controls">
