@@ -456,6 +456,10 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
                                         return `${context.dataset.label}: ${value} minutes`;
                                     }
                                 }
+                            },
+                            legend: {
+                                display: false,
+                                position: "bottom"
                             }
                         },
                         responsive: true,
