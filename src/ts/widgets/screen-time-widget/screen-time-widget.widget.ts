@@ -188,15 +188,13 @@ export class Controller {
 function fetchAllScreenTimeDataForUserAndDates($http: IHttpService, ctrl: Controller, userId: string, dailyDate: string, startDate: string, endDate: string): Promise<{ weekly: any, daily: any }> {
     ctrl.children = fetchChildren(ctrl);
 
-    const weeklyEndpoint = `/appregistry/screen-time/${userId}/weekly?startDate=${startDate}&endDate=${endDate}&mock=false`;
-    const dailyEndpoint = `/appregistry/screen-time/${userId}/daily?date=${dailyDate}&mock=false`;
+    const weeklyEndpoint = `/appregistry/screen-time/${userId}/weekly?startDate=${startDate}&endDate=${endDate}`;
+    const dailyEndpoint = `/appregistry/screen-time/${userId}/daily?date=${dailyDate}`;
 
     return Promise.all([
         $http.get(weeklyEndpoint),
         $http.get(dailyEndpoint)
     ]).then(([weeklyResponse, dailyResponse]: [any, any]) => {
-        console.log("weekly: ", weeklyResponse.data);
-        console.log("daily: ", dailyResponse.data);
         ctrl.hasError = false;
         ctrl.errorMessage = "";
         return {
@@ -231,21 +229,15 @@ function fetchChildren(ctrl: Controller) {
     const childrenObj = session().user.children;
     ctrl.isParent = false;
 
-    const USE_MOCK_IDS = true;
-
     if (childrenObj && Object.keys(childrenObj).length > 0) {
         ctrl.isParent = true;
 
-        // Replace userIds with mocked values: 100, 101, 102, ...
-        let mockIdCounter = 100;
-
         return Object.entries(childrenObj).map(([userId, childData]) => {
             const child = childData as { firstName: string; lastName: string };
-            const mockedId = (mockIdCounter++).toString(); // To remove and use real Id
             return {
                 id: userId,
                 name: `${child.firstName} ${child.lastName}`,
-                userId: USE_MOCK_IDS ? mockedId : userId
+                userId:   userId
             };
         });
     } else {
