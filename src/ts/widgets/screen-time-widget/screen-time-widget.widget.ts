@@ -413,7 +413,7 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
                 sortedDates.forEach(dataStr => {
                     const entry = dataToUse[dataStr];
                     labels.push(moment(dataStr).format('ddd D'));
-                    totalTimes.push(entry.duration);
+                    totalTimes.push(entry.duration / 60);
                 })
             } else {
                 dataToUse.forEach((hourData: any) => {
@@ -426,7 +426,24 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
             if (chartInstance) {
                 chartInstance.data.labels = labels;
                 chartInstance.data.datasets[0].data = totalTimes;
-                chartInstance.update('active');
+
+                chartInstance.options = {
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: ctrl.viewMode === "weekly" ? "Heures" : "Minutes"
+                            }
+                        }
+                    }
+                }
+
+                chartInstance.update();
             } else {
                 chartInstance = new Chart(ctx, {
                     type: "bar",
@@ -446,7 +463,7 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
                                 callbacks: {
                                     label: function (context) {
                                         const value = context.raw;
-                                        return `${context.dataset.label}: ${value} minutes`;
+                                        return `${context.dataset.label}: ${value} ${ctrl.viewMode === "weekly" ? "heures" : "minutes"}`;
                                     }
                                 }
                             },
@@ -465,7 +482,7 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
                                 beginAtZero: true,
                                 title: {
                                     display: true,
-                                    text: "Minutes"
+                                    text: ctrl.viewMode === "weekly" ? "Heures" : "Minutes"
                                 }
                             }
                         }
