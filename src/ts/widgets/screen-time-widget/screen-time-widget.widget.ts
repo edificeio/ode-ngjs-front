@@ -215,9 +215,9 @@ function fetchAllScreenTimeDataForUserAndDates($http: IHttpService, ctrl: Contro
         ctrl.hasError = true;
 
         if (error?.status === 404) {
-            ctrl.errorMessage = "Erreur lors de l’identification de l’utilisateur. Contactez l’administrateur de votre établissement.";
+            ctrl.errorMessage = ctrl.lang.translate("screenTime.error.404");
         } else {
-            ctrl.errorMessage = "Un problème technique est survenu. Si le problème persiste contactez l’administrateur de votre établissement.";
+            ctrl.errorMessage = ctrl.lang.translate("screenTime.error.generic");
         }
 
         console.error("Error fetching data for current user and dates:", error);
