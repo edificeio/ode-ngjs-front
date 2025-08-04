@@ -194,6 +194,15 @@
       <i18n>cantine.title</i18n>
     </h2>
     <div class="cantine-separator"></div>
+
+    <!-- Error messages for structure loading -->
+    <div ng-if="ctrl.noStructuresError" class="menu-error-message">
+      <i18n>cantine.error.noStructures</i18n>
+    </div>
+    <div ng-if="ctrl.loadStructuresError" class="menu-error-message">
+      <i18n>cantine.error.loadStructuresFailed</i18n>
+    </div>
+
     <!-- Dropdown shown only when there are multiple UAIs -->
     <div ng-if="ctrl.showUaiDropdown">
       <select id="uaiSelect" class="form-control" ng-model="ctrl.selectedUai"
@@ -380,7 +389,18 @@
         </div>
       </div>
       <div ng-if="ctrl.menuUnavailable" class="menu-error-message">
-        {{ ctrl.unavailableMessage }}
+        <div ng-if="ctrl.selectInstitutionError">
+          <i18n>cantine.error.selectInstitution</i18n>
+        </div>
+        <div ng-if="ctrl.menuNotAvailableError">
+          <i18n>cantine.error.menuNotAvailable</i18n>
+        </div>
+        <div ng-if="ctrl.menuUnavailableForInstitutionError">
+          <i18n>cantine.error.menuUnavailableForInstitution</i18n>
+        </div>
+        <div ng-if="ctrl.loadMenuError">
+          <i18n>cantine.error.loadMenuFailed</i18n>
+        </div>
       </div>
     </div>
 
