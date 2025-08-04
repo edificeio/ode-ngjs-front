@@ -6,5 +6,11 @@
     "cantine.accompagnement": "Accompagnement",
     "cantine.dessert": "Dessert",
     "cantine.allergenes": "⚠️ Allergènes",
-    "cantine.selectUai": "Établissement"
+    "cantine.selectUai": "Établissement",
+    "cantine.error.noStructures": "Aucune structure trouvée pour l'utilisateur.",
+    "cantine.error.loadStructuresFailed": "Échec du chargement des structures utilisateur.",
+    "cantine.error.selectInstitution": "Veuillez sélectionner un établissement.",
+    "cantine.error.menuNotAvailable": "Menu non disponible pour cette date.",
+    "cantine.error.menuUnavailableForInstitution": "Menu indisponible pour cet établissement.",
+    "cantine.error.loadMenuFailed": "Une erreur est survenue lors du chargement du menu."
 }

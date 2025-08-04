@@ -12,7 +12,12 @@ class Controller implements IController {
   schoolOptions: { uai: string; name: string }[] = [];
 
   menuUnavailable: boolean = false;
-  unavailableMessage: string = '';
+  noStructuresError: boolean = false;
+  loadStructuresError: boolean = false;
+  selectInstitutionError: boolean = false;
+  menuNotAvailableError: boolean = false;
+  menuUnavailableForInstitutionError: boolean = false;
+  loadMenuError: boolean = false;
 
   apiDate: string;
   currentDate: string = '';
@@ -68,10 +73,12 @@ class Controller implements IController {
         this.setupUaiDropdown(); // 🔹 call helper
         this.apply?.();
       } else {
-        this.error = "No structures found for user.";
+        this.clearAllErrorFlags();
+        this.noStructuresError = true;
       }
     } catch {
-      this.error = "Failed to load user structures.";
+      this.clearAllErrorFlags();
+      this.loadStructuresError = true;
     }
   }
 
@@ -115,7 +122,12 @@ class Controller implements IController {
       day: '2-digit',
       month: 'long',
     };
-    this.currentDate = this.pickerDate.toLocaleDateString('fr-FR', options);
+    
+    // Get current language from session or default to French
+    const currentLang = session().currentLanguage || 'fr';
+    const locale = currentLang === 'en' ? 'en-US' : 'fr-FR';
+    
+    this.currentDate = this.pickerDate.toLocaleDateString(locale, options);
     this.currentDate = this.currentDate.charAt(0).toUpperCase() + this.currentDate.slice(1);
   }
 
@@ -123,7 +135,8 @@ class Controller implements IController {
     if (!this.selectedUai) {
       this.data = { entrees: [], plats: [], accompagnements: [], desserts: [], laitage: [] };
       this.menuUnavailable = true;
-      this.unavailableMessage = "Veuillez sélectionner un établissement.";
+      this.clearAllErrorFlags();
+      this.selectInstitutionError = true;
       this.apply?.();
       return;
     }
@@ -142,11 +155,17 @@ class Controller implements IController {
           };
           this.menuUnavailable = false;
           this.error = null;
-          this.unavailableMessage = '';
+          this.selectInstitutionError = false;
+          this.menuNotAvailableError = false;
+          this.menuUnavailableForInstitutionError = false;
+          this.loadMenuError = false;
+          this.noStructuresError = false;
+          this.loadStructuresError = false;
         } else {
           this.data = { entrees: [], plats: [], accompagnements: [], desserts: [], laitage: [] };
           this.menuUnavailable = true;
-          this.unavailableMessage = "Menu non disponible pour cette date.";
+          this.clearAllErrorFlags();
+          this.menuNotAvailableError = true;
           this.error = null;
         }
 
@@ -157,11 +176,13 @@ class Controller implements IController {
 
         if (error.response?.status === 400) {
           this.menuUnavailable = true;
-          this.unavailableMessage = "Menu indisponible pour cet établissement.";
+          this.clearAllErrorFlags();
+          this.menuUnavailableForInstitutionError = true;
           this.error = null;
         } else {
           this.menuUnavailable = true;
-          this.unavailableMessage = "Une erreur est survenue lors du chargement du menu.";
+          this.clearAllErrorFlags();
+          this.loadMenuError = true;
           this.error = error.message || "Unknown error";
         }
 
@@ -176,10 +197,22 @@ class Controller implements IController {
       .map(k => k.replace("allerg_", "").replace("_", " "));
   }
 
+  // 🔹 Helper method to clear all error flags
+  private clearAllErrorFlags() {
+    this.noStructuresError = false;
+    this.loadStructuresError = false;
+    this.selectInstitutionError = false;
+    this.menuNotAvailableError = false;
+    this.menuUnavailableForInstitutionError = false;
+    this.loadMenuError = false;
+  }
+
   // 🔹 New helper method
   private setupUaiDropdown() {
     if (this.schoolOptions.length > 1) {
-      this.schoolOptions.unshift({ uai: '', name: 'Établissement' });
+      const currentLang = session().currentLanguage || 'fr';
+      const institutionText = currentLang === 'en' ? 'Institution' : 'Établissement';
+      this.schoolOptions.unshift({ uai: '', name: institutionText });
       this.selectedUai = '';
     } else if (this.schoolOptions.length === 1) {
       this.selectedUai = this.schoolOptions[0].uai;
@@ -213,8 +246,15 @@ function DirectiveFactory() {
 
 notif()
   .onLangReady()
-  .promise.then(() => {
-    conf().Platform.idiom.addKeys(require("./i18n/fr.json"));
+  .promise.then((lang: any): void => {
+    switch (lang) {
+      case "en":
+        conf().Platform.idiom.addKeys(require("./i18n/en.json"));
+        break;
+      default:
+        conf().Platform.idiom.addKeys(require("./i18n/fr.json"));
+        break;
+    }
   });
 
 export const odeModuleName = "odeCantineWidgetModule";

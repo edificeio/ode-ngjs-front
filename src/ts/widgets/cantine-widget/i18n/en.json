@@ -1,0 +1,16 @@
+{
+    "cantine.title": "Today's Menu",
+    "cantine.entree": "Starter",
+    "cantine.laitage": "Dairy",
+    "cantine.plat": "Main Course",
+    "cantine.accompagnement": "Side Dish",
+    "cantine.dessert": "Dessert",
+    "cantine.allergenes": "⚠️ Allergens",
+    "cantine.selectUai": "Institution",
+    "cantine.error.noStructures": "No structures found for user.",
+    "cantine.error.loadStructuresFailed": "Failed to load user structures.",
+    "cantine.error.selectInstitution": "Please select an institution.",
+    "cantine.error.menuNotAvailable": "Menu not available for this date.",
+    "cantine.error.menuUnavailableForInstitution": "Menu unavailable for this institution.",
+    "cantine.error.loadMenuFailed": "An error occurred while loading the menu."
+} 
