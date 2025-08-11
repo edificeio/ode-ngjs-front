@@ -1,12 +1,13 @@
-# ode-ngjs-front
-Open Digital Education (ODE) frontend framework definition and implementation.
-
-/!\ THIS IS WORK IN PROGRESS, AND STILL UNDER HEAVY DEVELOPMENT. 
-PLEASE DO NOT USE UNTIL IT REACHES 1.0.
+# À propos d'ode-ngjs-front
+    
+* Licence : [AGPL v3](http://www.gnu.org/licenses/agpl.txt) - Copyright Edifice
+* Financeur(s) : Edifice
+* Développeur(s) : Edifice
+* Description : framework UI Edifice pour les applications AngularJS / Bootstrap.
 
 It focus on the UI (presentation layer), and relies on ode-ts-client for the data layer.
 
-Written in typescript, it provides features and components to build and run ODE applications :
+Written in typescript, it provides features and components to build and run Edifice applications :
 
 - angularJS bootstrap,
 - many angularJS directives and services,
