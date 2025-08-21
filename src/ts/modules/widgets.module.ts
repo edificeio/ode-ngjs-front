@@ -457,24 +457,6 @@ function loadMediacentreWidgetModule() {
         });
     }
 
-    /** Dynamically load the "PtitObservatoire" widget, which is packaged as a separate entry thanks to require.ensure(). */
-    function loadPtitObservatoireWidgetModule() {
-        return new Promise<string>((resolve, reject) => {
-            require.ensure(
-                ["../widgets/ptit-observatoire-widget/ptit-observatoire-widget.widget"],
-                function(require) {
-                    var jsModule = <typeof PtitObservatoire> require('../widgets/ptit-observatoire-widget/ptit-observatoire-widget.widget');
-                    resolve( jsModule.odeModuleName );
-                },
-                function(error) {
-                    console.log(error);
-                    reject()
-                },
-                "widgets/ptit-observatoire-widget/ptit-observatoire-widget.widget"
-            )
-        })
-    }
-
 /**
  * The "odeWidgets" angularjs module is a placeholder for widgets directives.
  */
