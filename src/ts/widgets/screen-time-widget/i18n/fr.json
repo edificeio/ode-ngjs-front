@@ -1,1 +1,25 @@
-{}
+{
+  "screenTime.title.normal": "Temps d'écran",
+  "screenTime.title.uppercase": "TEMPS D'ÉCRAN",
+  "screenTime.today": "Aujourd'hui",
+  "screenTime.yesterday": "Hier",
+  "screenTime.weekAverage": "Moyenne hebdomadaire",
+  "screenTime.displayDetails": "Voir le détail",
+  "screenTime.user": "Utilisateur",
+  "screenTime.viewMode": "Affichage",
+  "screenTime.viewMode.weekly": "Hebdomadaire",
+  "screenTime.viewMode.daily": "Quotidien",
+  "screenTime.modal.close": "Fermer",
+  "screenTime.information.first": "'Temps d'écran' est une fonctionnalité mise en place par le Département des Bouches-du-Rhône.",
+  "screenTime.information.second": "Elle permet de mesurer le temps d'activité de l'élève sur l'ordinateur portable fourni par le Département pendant les heures de cours et en dehors des heures de cours.",
+  "screenTime.information.third": "'Temps d'écran' observe uniquement l'ouverture et la fermeture de session de l'élève sur son ordinateur.",
+  "screenTime.information.fourth": "La fonctionnalité n'enregistre aucune donnée d'usage personnel ou de navigation sur internet.",
+  "screenTime.error.generic": "Un problème technique est survenu. Si le problème persiste, contactez l'administrateur de votre établissement.",
+  "screenTime.error.404": "Erreur lors de l'identification de l'utilisateur. Contactez l'administrateur de votre établissement.",
+  "screenTime.error.noUser": "Aucun utilisateur disponible pour afficher les données de temps d'écran.",
+  "screenTime.totalUsage": "Usage total",
+  "screenTime.hours": "Heures",
+  "screenTime.minutes": "Minutes",
+  "screenTime.from": "du",
+  "screenTime.to": "au"
+}

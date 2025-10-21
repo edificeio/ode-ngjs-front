@@ -45,59 +45,6 @@
         color: #333;
     }
 
-    .percentage-bar-container {
-        width: 100%;
-        height: 10px;
-        background-color: #e0e0e0;
-        border-radius: 5px;
-        margin-top: 5px;
-        display: flex;
-        overflow: hidden;
-    }
-
-    .percentage-bar {
-        height: 100%;
-        transition: width 0.5s ease-in-out;
-        border-radius: 5px;
-    }
-
-    .au-college {
-        background-color: #2A9CC8;
-    }
-
-    .hors-college {
-        background-color: #ECBE30;
-    }
-
-    .legend {
-        display: flex;
-        gap: 16px;
-        align-items: center;
-        margin-top: 10px;
-        font-size: 10px;
-        color: #333;
-    }
-
-    .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .legend-square {
-        width: 16px;
-        height: 16px;
-        border-radius: 4px;
-    }
-
-    .legend-au-college {
-        background-color: #2A9CC8;
-    }
-
-    .legend-hors-college {
-        background-color: #ECBE30;
-    }
-
     .custom-select {
         appearance: none;
         border: none;
@@ -146,6 +93,23 @@
         margin: 0 auto 20px auto;
         width: fit-content;
         text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .control-group {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .control-group label {
+        min-width: 80px;
+        text-align: left;
     }
 
     .close-button-container {
@@ -170,20 +134,6 @@
 
     .close-button:hover {
         background: #e67c24;
-    }
-
-    .date-controls {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-
-    .nav-button {
-        background: none;
-        border: none;
-        font-size: 24px;
-        cursor: pointer;
     }
 
     .date-navigation {
@@ -220,7 +170,7 @@
 <div class="screen-time-widget-container">
     <div class="screen-time-summary">
         <div class="title">
-            <div class="label">TEMPS D'ÉCRAN</div>
+            <div class="label"><i18n>screenTime.title.uppercase</i18n></div>
         </div>
 
         <div ng-if="ctrl.isParent">
@@ -236,48 +186,22 @@
         <div ng-if="!ctrl.errorMessage">
             <div class="summary-row">
                 <div class="summary-block">
-                    <div class="label">Aujourd'hui</div>
+                    <div class="label"><i18n>screenTime.today</i18n></div>
                     <div class="value">{{ ctrl.todayTotal | duration }}</div>
 
-                    <div class="percentage-bar-container">
-                        <div class="percentage-bar au-college" ng-style="{ width: ctrl.todaySchoolUsePercentage + '%' }"
-                            title="{{ ctrl.todaySchoolUsePercentage | duration }} au collège">
-                        </div>
-                        <div class="percentage-bar hors-college"
-                            ng-style="{ width: ctrl.todayOutOfSchoolPercentage + '%' }"
-                            title="{{ ctrl.todayOutOfSchoolPercentage | duration }} hors collège"></div>
-                    </div>
                 </div>
             </div>
 
             <div class="summary-row">
                 <div class="summary-block">
-                    <div class="label">Moyenne de la semaine</div>
-                    <div class="value">{{ ctrl.weeklyTotalAverage | duration }}</div>
-
-                    <div class="percentage-bar-container">
-                        <div class="percentage-bar au-college"
-                            ng-style="{ width: ctrl.weeklyAvgSchoolUsePercentage + '%' }"
-                            title="{{ ctrl.weeklyAvgSchoolUsePercentage | duration }} au Collège">
-                        </div>
-                        <div class="percentage-bar hors-college"
-                            ng-style="{ width: ctrl.weeklyAvgOutOfSchoolPercentage + '%' }"
-                            title="{{ ctrl.weeklyAvgOutOfSchoolPercentage | duration}} hors collège"></div>
-                    </div>
+                    <div class="label"><i18n>screenTime.yesterday</i18n></div>
+                    <div class="value">{{ ctrl.yesterdayTotal | duration }}</div>
                 </div>
             </div>
 
             <div class="legend">
-                <div class="legend-item">
-                    <div class="legend-square legend-au-college"></div>
-                    <span>Au collège</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-square legend-hors-college"></div>
-                    <span>Hors collège</span>
-                </div>
                 <div class="see-more">
-                    <button ng-click="ctrl.toggleLightbox(true)">Voir le détail</button>
+                    <button ng-click="ctrl.toggleLightbox(true)"><i18n>screenTime.displayDetails</i18n></button>
                 </div>
             </div>
         </div>
@@ -285,22 +209,26 @@
 
     <ode-modal visible="ctrl.showLightbox" on-close="ctrl.toggleLightbox(false)" size="lg" dnd-nodrag>
         <ode-modal-title>
-            <h2>Temps d'écran</h2>
+            <h2><i18n>screenTime.title.normal</i18n></h2>
         </ode-modal-title>
 
         <ode-modal-body>
             <div class="centered-controls">
-                <label style="font-size: 14px;" for="userSelect">Utilisateur :</label>
-                <div ng-if="ctrl.isParent">
-                    <select id="userSelect" class="custom-select" ng-model="ctrl.selectedChildHistogram"
-                        ng-options="child.userId as child.name for child in ctrl.children"> </select>
+                <div class="control-group">
+                    <div ng-if="ctrl.isParent">
+                    <label style="font-size: 14px;" for="userSelect"><i18n>screenTime.user</i18n> :</label>
+                        <select id="userSelect" class="custom-select" ng-model="ctrl.selectedChildHistogram"
+                            ng-options="child.userId as child.name for child in ctrl.children"> </select>
+                    </div>
                 </div>
 
-                <label for="viewMode">Affichage :</label>
-                <select id="viewMode" class="custom-select" ng-model="ctrl.viewMode" ng-change="ctrl.updateChart()">
-                    <option value="weekly">Hebdomadaire</option>
-                    <option value="daily">Quotidien</option>
-                </select>
+                <div class="control-group">
+                    <label for="viewMode"><i18n>screenTime.viewMode</i18n> :</label>
+                    <select id="viewMode" class="custom-select" ng-model="ctrl.viewMode" ng-change="ctrl.updateChart()">
+                        <option value="weekly">{{ 'screenTime.viewMode.weekly' | i18n }}</option>
+                        <option value="daily">{{ 'screenTime.viewMode.daily' | i18n }}</option>
+                    </select>
+                </div>
             </div>
 
             <canvas id="myChart" style="width:100%; height:200px;"></canvas>
@@ -313,7 +241,7 @@
 
                     <!-- Show selected date text or datepicker -->
                     <div ng-if="!ctrl.showDatePicker" class="selected-date" ng-click="ctrl.toggleDatePicker(true)">
-                        {{ ctrl.selectedDailyDateObj | date:'fullDate' }}
+                        {{ ctrl.dailyLabel }}
                     </div>
 
                     <input type="date" ng-if="ctrl.showDatePicker" ng-model="ctrl.selectedDailyDate"
@@ -334,7 +262,7 @@
 
 
             <div class="close-button-container">
-                <button class="close-button" ng-click="ctrl.toggleLightbox(false)">Fermer</button>
+                <button class="close-button" ng-click="ctrl.toggleLightbox(false)"><i18n>screenTime.modal.close</i18n></button>
             </div>
         </ode-modal-body>
     </ode-modal>

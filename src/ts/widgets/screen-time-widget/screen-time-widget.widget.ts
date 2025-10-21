@@ -3,6 +3,7 @@ import { conf, notif, session } from "../../utils";
 import { Chart, registerables } from "chart.js";
 import moment, { Moment } from "moment";
 import 'moment/locale/fr';
+import { odeI18nModule } from "../../modules/i18n.module";
 
 Chart.register(...registerables);
 moment.locale('fr');
@@ -47,9 +48,6 @@ export class Controller {
 
     // end of new 
 
-    public customWeekMode: boolean = false;
-    public customStartDate: string = "";
-    public customEndDate: string = "";
 
     public isParent: boolean = false;
 
@@ -63,7 +61,6 @@ export class Controller {
     public showDatePicker: boolean = false;
 
     public children: { id: string; name: string; userId: string }[] = [];
-    public selectedChild = null;
     public selectedChildHistogram = "";
 
     public toggleDatePicker(show: boolean) {
@@ -111,22 +108,42 @@ export class Controller {
         this.fetchLightboxData();
     }
 
-    public get selectedDailyDateObj(): Date {
-        return new Date(this.selectedDailyDate);
-    }
 
     public get weekLabel(): string {
         const start = this.weekStart.format('dddd D MMMM');
         const end = this.weekEnd.format('dddd D MMMM');
         return `du ${start} au ${end}`;
     }
+
+    public get dailyLabel(): string {
+        return moment(this.selectedDailyDate).format('dddd D MMMM');
+    }
+
+    public get yesterdayTotal(): number {
+        const yesterday = moment().subtract(1, 'day').format("YYYY-MM-DD");
+        
+        // Find the current user's data key
+        const currentKey = `${this.selectedUser}_daily_${moment().format('YYYY-MM-DD')}_weekly_${moment().startOf('isoWeek').format('YYYY-MM-DD')}_${moment().endOf('isoWeek').format('YYYY-MM-DD')}`;
+        const userData = this.userData[currentKey];
+        
+        if (!userData || !userData.weekly) {
+            return 0;
+        }
+        
+        const yesterdayData = userData.weekly[yesterday];
+        if (!yesterdayData) {
+            return 0;
+        }
+        
+        return yesterdayData.duration || 0;
+    }
 }
 
 function fetchAllScreenTimeDataForUserAndDates($http: IHttpService, ctrl: Controller, userId: string, dailyDate: string, startDate: string, endDate: string): Promise<{ weekly: any, daily: any }> {
     ctrl.children = fetchChildren(ctrl);
 
-    const weeklyEndpoint = `/appregistry/screen-time/${userId}/weekly?startDate=${startDate}&endDate=${endDate}&mock=false`;
-    const dailyEndpoint = `/appregistry/screen-time/${userId}/daily?date=${dailyDate}&mock=false`;
+    const weeklyEndpoint = `/appregistry/screen-time/${userId}/weekly?startDate=${startDate}&endDate=${endDate}`;
+    const dailyEndpoint = `/appregistry/screen-time/${userId}/daily?date=${dailyDate}`;
 
     return Promise.all([
         $http.get(weeklyEndpoint),
@@ -168,7 +185,7 @@ function fetchChildren(ctrl: Controller) {
     const childrenObj = session().user.children;
     ctrl.isParent = false;
 
-    const USE_MOCK_IDS = true;
+    const USE_MOCK_IDS = false;
 
     if (childrenObj && Object.keys(childrenObj).length > 0) {
         ctrl.isParent = true;
@@ -212,16 +229,9 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
 
         // Function to update the summary values from the pre-fetched weekly data
         const updateSummary = (weeklyData: any) => {
-            let totalOnCampus = 0;
-            let totalOffCampus = 0;
-            let daysCount = 0;
             const today = moment().format("YYYY-MM-DD");
             let todayOnCampusTemp = 0;
             let todayOffCampusTemp = 0;
-
-            let weeklyTotalSchoolUseDuration = 0;
-            let weeklyTotalOutOfSchoolDuration = 0;
-            let weeklyTotalOverallDuration = 0;
 
             Object.keys(weeklyData).forEach(dateStr => {
                 const entry = weeklyData[dateStr];
@@ -230,14 +240,6 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
 
                 const onCampus = duration * schoolUsePct;
                 const offCampus = duration * (1 - schoolUsePct);
-
-                totalOnCampus += onCampus;
-                totalOffCampus += offCampus;
-                daysCount++;
-
-                weeklyTotalSchoolUseDuration += onCampus;
-                weeklyTotalOutOfSchoolDuration += offCampus;
-                weeklyTotalOverallDuration += duration;
 
                 if (moment(dateStr).format("YYYY-MM-DD") === today) {
                     todayOnCampusTemp = onCampus;
@@ -250,17 +252,6 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
             ctrl.todayOnCampus = todayOnCampusTemp;
             ctrl.todayOffCampus = todayOffCampusTemp;
             ctrl.todayTotal = todayOnCampusTemp + todayOffCampusTemp;
-            ctrl.weeklyAvgOnCampus = daysCount > 0 ? totalOnCampus / daysCount : 0;
-            ctrl.weeklyAvgOffCampus = daysCount > 0 ? totalOffCampus / daysCount : 0;
-            ctrl.weeklyTotalAverage = ctrl.weeklyAvgOnCampus + ctrl.weeklyAvgOffCampus;
-
-            if (weeklyTotalOverallDuration > 0) {
-                ctrl.weeklyAvgSchoolUsePercentage = (weeklyTotalSchoolUseDuration / weeklyTotalOverallDuration) * 100;
-                ctrl.weeklyAvgOutOfSchoolPercentage = (weeklyTotalOutOfSchoolDuration / weeklyTotalOverallDuration) * 100;
-            } else {
-                ctrl.weeklyAvgSchoolUsePercentage = 0;
-                ctrl.weeklyAvgOutOfSchoolPercentage = 0;
-            }
         };
 
         // Helper to generate a unique key for caching data based on user and date range
@@ -339,7 +330,6 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
 
             let labels: string[] = [];
             let appTimes: number[] = [];
-            let otherTimes: number[] = [];
 
             const userIdForChart = ctrl.selectedChildHistogram || ctrl.selectedUser;
 
@@ -363,14 +353,12 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
                 sortedDates.forEach(dateStr => {
                     const entry = dataToUse[dateStr];
                     labels.push(moment(dateStr).format("ddd D"));
-                    appTimes.push(entry.duration * entry.schoolUsePercentage);
-                    otherTimes.push(entry.duration * (1 - entry.schoolUsePercentage));
+                    appTimes.push(entry.duration); // Total duration instead of separated
                 });
             } else {
                 dataToUse.forEach((hourData: any) => {
                     labels.push(`${hourData.hour}h`);
-                    appTimes.push(hourData.duration * hourData.schoolUsePercentage);
-                    otherTimes.push(hourData.duration * (1 - hourData.schoolUsePercentage));
+                    appTimes.push(hourData.duration); // Total duration instead of separated
                 });
             }
 
@@ -380,24 +368,22 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
                     labels,
                     datasets: [
                         {
-                            label: "Usage scolaire",
+                            label: "", // Empty label to hide from legend
                             data: appTimes,
                             backgroundColor: "#2A9CC8"
-                        },
-                        {
-                            label: "Usage hors scolaire",
-                            data: otherTimes,
-                            backgroundColor: "#ECBE30"
                         }
                     ]
                 },
                 options: {
                     plugins: {
+                        legend: {
+                            display: false // Hide legend completely
+                        },
                         tooltip: {
                             callbacks: {
                                 label: function (context) {
                                     const value = context.raw;
-                                    return `${context.dataset.label}: ${value} minutes`;
+                                    return `${value} minutes`;
                                 }
                             }
                         }
@@ -405,10 +391,10 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
                     responsive: true,
                     scales: {
                         x: {
-                            stacked: true
+                            // Removed stacked: true since we only have one dataset
                         },
                         y: {
-                            stacked: true,
+                            // Removed stacked: true since we only have one dataset
                             beginAtZero: true,
                             title: {
                                 display: true,
@@ -487,7 +473,7 @@ export const odeModuleName = "odeCantineWidgetModule";
 
 // Angular module definition
 angular
-    .module(odeModuleName, [])
+    .module(odeModuleName, [odeI18nModule().name])
     // Define the custom 'duration' filter
     .filter('duration', function () {
         return function (input: number) {
@@ -518,8 +504,11 @@ angular
 // Internationalization setup
 notif()
     .onLangReady()
-    .promise.then((lang) => {
+    .promise.then((lang: any): void => {
         switch (lang) {
+            case "en":
+                conf().Platform.idiom.addKeys(require("./i18n/en.json"));
+                break;
             default:
                 conf().Platform.idiom.addKeys(require("./i18n/fr.json"));
                 break;
