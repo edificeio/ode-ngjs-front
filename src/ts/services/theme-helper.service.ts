@@ -35,6 +35,7 @@ export class ThemeHelperService {
         "screen-time-widget":   "ic-widget-screen-time",
         "evaluation-widget":    "ic-widget-evaluation",
         "ptit-observatoire-widget": "ic-widget-edumalin",
+        "screen-time-widget":   "ic-widget-screen"
     }
 
     constructor( 
