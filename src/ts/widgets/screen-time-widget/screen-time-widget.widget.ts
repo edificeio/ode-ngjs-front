@@ -14,7 +14,7 @@ export class Controller {
     public selectedUser: string = "";
     public viewMode: "weekly" | "daily" = "weekly";
 
-    public userData: { [key: string]: { weekly: any, daily: any } } = {};
+    public userData: { [key: string]: { weekly?: any, daily?: any, yesterday?: any, today?: any, yesterdayTotal?: number } } = {};
     public selectedDailyDate: string = moment().format('YYYY-MM-DD');
     public tempDailyDate: string = moment().format('YYYY-MM-DD');
     public weekStart: Moment = moment().startOf('isoWeek'); // Monday
@@ -25,6 +25,7 @@ export class Controller {
     public todayOnCampus = 0;
     public todayOffCampus = 0;
     public todayTotal = 0;
+    public yesterdayTotal = 0;
 
     public weeklyAvgOnCampus = 0;
     public weeklyAvgOffCampus = 0;
@@ -46,10 +47,6 @@ export class Controller {
 
     // end of new 
 
-    public customWeekMode: boolean = false;
-    public customStartDate: string = "";
-    public customEndDate: string = "";
-
     public isParent: boolean = false;
 
     public hasError: boolean = false;
@@ -62,7 +59,6 @@ export class Controller {
     public showDatePicker: boolean = false;
 
     public children: { id: string; name: string; userId: string }[] = [];
-    public selectedChild = null;
     public selectedChildHistogram = "";
 
     public toggleDatePicker(show: boolean) {
@@ -225,10 +221,6 @@ export class Controller {
         this.fetchLightboxData();
     }
 
-    public get selectedDailyDateObj(): Date {
-        return new Date(this.selectedDailyDate);
-    }
-
     public get selectedDailyDateLabel(): string {
         return moment(this.selectedDailyDate).format('dddd D MMMM YYYY');
     }
@@ -244,6 +236,65 @@ export class Controller {
     }
 }
 
+// Function for initial load - only fetches daily data for today and yesterday
+function fetchInitialDailyData($http: IHttpService, ctrl: Controller, userId: string, todayDate: string): Promise<{ yesterdayTotal: number, today: any }> {
+    ctrl.children = fetchChildren(ctrl);
+
+    // Calculate yesterday's date
+    const yesterdayDate = moment(todayDate).subtract(1, 'day').format('YYYY-MM-DD');
+    
+    // Create endpoints for today and yesterday
+    const todayEndpoint = `/appregistry/screen-time/${userId}/daily?date=${todayDate}`;
+    const yesterdayEndpoint = `/appregistry/screen-time/${userId}/daily?date=${yesterdayDate}`;
+
+    return Promise.all([
+        $http.get(yesterdayEndpoint), // Get yesterday's data
+        $http.get(todayEndpoint)       // Get today's data
+    ]).then(([yesterdayResponse, todayResponse]: [any, any]) => {
+        ctrl.hasError = false;
+        ctrl.errorMessage = "";
+        
+        // Handle yesterday's data - calculate total from hourly durations
+        let yesterdayTotalDuration = 0;
+        if (yesterdayResponse && yesterdayResponse.data && yesterdayResponse.data.durations) {
+            yesterdayTotalDuration = yesterdayResponse.data.durations.reduce((total: number, hour: any) => {
+                return total + (hour.durationMinutes || 0);
+            }, 0);
+        } else {
+            // Yesterday data not available - this is normal if there's no usage
+        }
+        
+        // Handle today's data - check if data exists and has the expected structure
+        let todayData = [];
+        if (todayResponse && todayResponse.data && todayResponse.data.durations) {
+            todayData = todayResponse.data.durations.map((hour: any) => ({
+                hour: hour.hour,
+                duration: hour.durationMinutes,
+                schoolUsePercentage: hour.schoolUsePercentage / 100 // convert to ratio
+            }));
+        } else {
+            // Today data not available - this is normal if there's no usage
+        }
+        
+        return {
+            yesterdayTotal: yesterdayTotalDuration,
+            today: todayData
+        };
+    }).catch(error => {
+        ctrl.hasError = true;
+
+        if (error?.status === 404) {
+            ctrl.errorMessage = ctrl.lang.translate("screenTime.error.404");
+        } else {
+            ctrl.errorMessage = ctrl.lang.translate("screenTime.error.generic");
+        }
+
+        console.error("Error fetching initial daily data:", error);
+        return Promise.reject(error);
+    });
+}
+
+// Function for lightbox - fetches both weekly and daily data
 function fetchAllScreenTimeDataForUserAndDates($http: IHttpService, ctrl: Controller, userId: string, dailyDate: string, startDate: string, endDate: string): Promise<{ weekly: any, daily: any }> {
     ctrl.children = fetchChildren(ctrl);
 
@@ -324,7 +375,32 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
 
         let chartInstance: Chart | null = null;
 
-        // Function to update the summary values from the pre-fetched weekly data
+        // Function to update the summary values from initial daily data (today and yesterday)
+        const updateInitialSummary = (todayData: any, yesterdayTotal: number) => {
+            // Calculate today's totals from hourly data
+            let todayOnCampusTemp = 0;
+            let todayOffCampusTemp = 0;
+
+            todayData.forEach((hourData: any) => {
+                const duration = hourData.duration || 0;
+                const schoolUsePct = hourData.schoolUsePercentage || 0;
+
+                const onCampus = duration * schoolUsePct;
+                const offCampus = duration * (1 - schoolUsePct);
+
+                todayOnCampusTemp += onCampus;
+                todayOffCampusTemp += offCampus;
+            });
+
+            ctrl.todayOnCampus = todayOnCampusTemp;
+            ctrl.todayOffCampus = todayOffCampusTemp;
+            ctrl.todayTotal = todayOnCampusTemp + todayOffCampusTemp;
+
+            // Set yesterday's total directly
+            ctrl.yesterdayTotal = yesterdayTotal;
+        };
+
+        // Function to update the summary values from the pre-fetched weekly data (for lightbox)
         const updateSummary = (weeklyData: any) => {
             let totalOnCampus = 0;
             let totalOffCampus = 0;
@@ -384,33 +460,27 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
         ctrl.fetchDataForCurrentUser = () => {
             ctrl.errorMessage = "";
             ctrl.hasError = false;
-            const currentKey = generateDataKey(
-                ctrl.selectedUser,
-                moment().format('YYYY-MM-DD'), // Always use today's date for initial load
-                moment().startOf('isoWeek').format('YYYY-MM-DD'),
-                moment().endOf('isoWeek').format('YYYY-MM-DD')
-            );
+            const today = moment().format('YYYY-MM-DD');
 
-            // Fetch initial summary data (today and current week)
-            fetchAllScreenTimeDataForUserAndDates(
+            // Fetch initial daily data (today and yesterday only)
+            fetchInitialDailyData(
                 $http,
                 ctrl,
                 ctrl.selectedUser,
-                moment().format('YYYY-MM-DD'),
-                moment().startOf('isoWeek').format('YYYY-MM-DD'),
-                moment().endOf('isoWeek').format('YYYY-MM-DD')
+                today
             ).then((data) => {
-                ctrl.userData[currentKey] = { weekly: data.weekly, daily: data.daily };
-                updateSummary(data.weekly); // Update the main summary values
+                // Store the initial data with a special key
+                const initialKey = `${ctrl.selectedUser}_initial_${today}`;
+                ctrl.userData[initialKey] = { yesterdayTotal: data.yesterdayTotal, today: data.today };
+                updateInitialSummary(data.today, data.yesterdayTotal); // Update the main summary values
                 scope.$applyAsync();
             }).catch(error => {
                 scope.$applyAsync();
-                console.error("Error fetching initial data for current user:", error);
+                console.error("Error fetching initial daily data for current user:", error);
             });
         };
 
         ctrl.fetchLightboxData = () => {
-
             const userIdForLightbox = ctrl.selectedChildHistogram || ctrl.selectedUser;
 
             if (!userIdForLightbox) return;
@@ -422,22 +492,93 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
                 ctrl.weekEnd.format('YYYY-MM-DD')
             );
 
-            fetchAllScreenTimeDataForUserAndDates(
-                $http,
-                ctrl,
-                userIdForLightbox,
-                ctrl.selectedDailyDate,
-                ctrl.weekStart.format('YYYY-MM-DD'),
-                ctrl.weekEnd.format('YYYY-MM-DD')
-            ).then((data) => {
-                ctrl.userData[currentKey] = { weekly: data.weekly, daily: data.daily };
-                if (ctrl.showLightbox) {
-                    setTimeout(() => ctrl.updateChart(), 50);
-                }
+            // Check if we already have the data we need for the current view mode
+            const existingData = ctrl.userData[currentKey];
+            if (ctrl.viewMode === "weekly" && existingData && existingData.weekly) {
+                // We have weekly data, just update the chart
+                setTimeout(() => ctrl.updateChart(), 50);
                 scope.$applyAsync();
-            }).catch(error => {
-                console.error("Error fetching data for lightbox:", error);
-            });
+                return;
+            }
+            if (ctrl.viewMode === "daily" && existingData && existingData.daily) {
+                // We have daily data, just update the chart
+                setTimeout(() => ctrl.updateChart(), 50);
+                scope.$applyAsync();
+                return;
+            }
+
+            // Fetch only the data we need based on the current view mode
+            if (ctrl.viewMode === "weekly") {
+                // Fetch only weekly data
+                const weeklyEndpoint = `/appregistry/screen-time/${userIdForLightbox}/weekly?startDate=${ctrl.weekStart.format('YYYY-MM-DD')}&endDate=${ctrl.weekEnd.format('YYYY-MM-DD')}`;
+                
+                $http.get(weeklyEndpoint).then((weeklyResponse: any) => {
+                    ctrl.hasError = false;
+                    ctrl.errorMessage = "";
+                    
+                    const weeklyData = weeklyResponse.data.dailySummaries.reduce((acc: any, day: any) => {
+                        acc[day.date] = {
+                            duration: day.durationMinutes,
+                            schoolUsePercentage: day.schoolUsePercentage / 100
+                        };
+                        return acc;
+                    }, {});
+
+                    // Update or create the data entry
+                    if (!ctrl.userData[currentKey]) {
+                        ctrl.userData[currentKey] = {};
+                    }
+                    ctrl.userData[currentKey].weekly = weeklyData;
+
+                    if (ctrl.showLightbox) {
+                        setTimeout(() => ctrl.updateChart(), 50);
+                    }
+                    scope.$applyAsync();
+                }).catch(error => {
+                    ctrl.hasError = true;
+                    if (error?.status === 404) {
+                        ctrl.errorMessage = ctrl.lang.translate("screenTime.error.404");
+                    } else {
+                        ctrl.errorMessage = ctrl.lang.translate("screenTime.error.generic");
+                    }
+                    console.error("Error fetching weekly data for lightbox:", error);
+                    scope.$applyAsync();
+                });
+            } else {
+                // Fetch only daily data
+                const dailyEndpoint = `/appregistry/screen-time/${userIdForLightbox}/daily?date=${ctrl.selectedDailyDate}`;
+                
+                $http.get(dailyEndpoint).then((dailyResponse: any) => {
+                    ctrl.hasError = false;
+                    ctrl.errorMessage = "";
+                    
+                    const dailyData = dailyResponse.data.durations.map((hour: any) => ({
+                        hour: hour.hour,
+                        duration: hour.durationMinutes,
+                        schoolUsePercentage: hour.schoolUsePercentage / 100
+                    }));
+
+                    // Update or create the data entry
+                    if (!ctrl.userData[currentKey]) {
+                        ctrl.userData[currentKey] = {};
+                    }
+                    ctrl.userData[currentKey].daily = dailyData;
+
+                    if (ctrl.showLightbox) {
+                        setTimeout(() => ctrl.updateChart(), 50);
+                    }
+                    scope.$applyAsync();
+                }).catch(error => {
+                    ctrl.hasError = true;
+                    if (error?.status === 404) {
+                        ctrl.errorMessage = ctrl.lang.translate("screenTime.error.404");
+                    } else {
+                        ctrl.errorMessage = ctrl.lang.translate("screenTime.error.generic");
+                    }
+                    console.error("Error fetching daily data for lightbox:", error);
+                    scope.$applyAsync();
+                });
+            }
         };
 
         ctrl.updateChart = () => {
@@ -461,10 +602,18 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
             );
             const currentUserAndDateData = ctrl.userData[currentDataKey];
 
-            if (!currentUserAndDateData) return;
+            if (!currentUserAndDateData) {
+                // No data available, fetch it
+                ctrl.fetchLightboxData();
+                return;
+            }
 
             const dataToUse: any = ctrl.viewMode === "weekly" ? currentUserAndDateData.weekly : currentUserAndDateData.daily;
-            if (!dataToUse) return;
+            if (!dataToUse) {
+                // Data not available for current view mode, fetch it
+                ctrl.fetchLightboxData();
+                return;
+            }
 
             if (ctrl.viewMode === "weekly") {
                 const sortedDates = Object.keys(dataToUse).sort();

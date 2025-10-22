@@ -2,6 +2,7 @@
   "screenTime.title.normal": "Screen Time",
   "screenTime.title.uppercase": "SCREEN TIME",
   "screenTime.today": "Today",
+  "screenTime.yesterday": "Yesterday",
   "screenTime.weekAverage": "Week Average",
   "screenTime.displayDetails": "View Details",
   "screenTime.user": "User",
