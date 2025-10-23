@@ -583,7 +583,15 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
 
         ctrl.updateChart = () => {
             const canvas = elem[0].querySelector<HTMLCanvasElement>("#myChart");
-            if (!canvas) return;
+            if (!canvas) {
+                return;
+            }            
+            // Reset canvas dimensions to prevent height accumulation
+            canvas.style.height = '350px';
+            canvas.style.maxHeight = '350px';
+            canvas.style.width = '100%';
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 350;
 
             const ctx = canvas.getContext("2d");
             if (!ctx) return;
