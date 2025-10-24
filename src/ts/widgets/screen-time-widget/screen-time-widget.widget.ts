@@ -118,15 +118,15 @@ export class Controller {
             this.fixedWeeklyAvgSchoolUsePercentage = this.weeklyAvgSchoolUsePercentage;
             this.fixedWeeklyAvgOutOfSchoolPercentage = this.weeklyAvgOutOfSchoolPercentage;
 
-            // Initialize lightbox dates to current date/week only if not already set
-            if (!this.selectedDailyDate) {
-                this.selectedDailyDate = moment().format('YYYY-MM-DD');
-            }
-            if (!this.weekStart || !this.weekEnd) {
-                this.weekStart = moment().startOf('isoWeek');
-                this.weekEnd = moment().endOf('isoWeek');
-            }
+            // Always reset lightbox to current date/week and current user when opened
+            this.selectedDailyDate = moment().format('YYYY-MM-DD');
+            this.weekStart = moment().startOf('isoWeek');
+            this.weekEnd = moment().endOf('isoWeek');
             this.selectedChildHistogram = this.selectedUser;
+            this.viewMode = 'weekly'; // Reset to weekly view as default
+            
+            // Clear any cached data to ensure fresh data is loaded
+            this.userData = {};
 
         }
     }
@@ -233,6 +233,11 @@ export class Controller {
         const toText = this.lang.translate("screenTime.to");
 
         return `${fromText} ${start} ${toText} ${end}`;
+    }
+
+    public get schoolYearStartDate(): string {
+        const { schoolYearStart } = this.getCurrentSchoolYear();
+        return schoolYearStart.format('YYYY-MM-DD');
     }
 }
 
@@ -675,7 +680,39 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
                             title: {
                                 display: true,
                                 text: ctrl.viewMode === "weekly" ? ctrl.lang.translate("screenTime.hours") : ctrl.lang.translate("screenTime.minutes"),
-                            }
+                            },
+                            ticks: {
+                                callback: function(value: any) {
+                                    if (ctrl.viewMode === "weekly") {
+                                        // Only show integer hours
+                                        const hours = Math.floor(value);
+                                        return `${hours}`;
+                                    } else {
+                                        // For daily mode, show 5-minute intervals
+                                        const minutes = Math.round(value);
+                                        return `${minutes}`;
+                                    }
+                                },
+                                // Force specific tick intervals
+                                stepSize: ctrl.viewMode === "weekly" ? 1 : 5, // 1-hour intervals for weekly, 5-minute intervals for daily
+                                maxTicksLimit: ctrl.viewMode === "weekly" ? 8 : 20, // More ticks allowed for daily mode
+                                // Force Chart.js to respect our stepSize
+                                precision: 0,
+                                // For daily mode, generate ticks manually to ensure 5-minute intervals
+                                ...(ctrl.viewMode === "daily" ? {
+                                    count: totalTimes.length === 0 || Math.max(...totalTimes) === 0 ? 6 : Math.ceil(Math.max(...totalTimes) / 5) + 1,
+                                    stepSize: 5
+                                } : {}),
+                                // For weekly mode, ensure 5 rows when no data
+                                ...(ctrl.viewMode === "weekly" ? {
+                                    count: totalTimes.length === 0 || Math.max(...totalTimes) === 0 ? 6 : undefined
+                                } : {})
+                            },
+                            // Ensure minimum range for small data or empty data
+                            suggestedMin: 0,
+                            suggestedMax: ctrl.viewMode === "weekly" ? 
+                                (totalTimes.length === 0 || Math.max(...totalTimes) === 0 ? 5 : Math.max(1, Math.ceil(Math.max(...totalTimes)))) : 
+                                (totalTimes.length === 0 || Math.max(...totalTimes) === 0 ? 25 : Math.max(5, Math.ceil(Math.max(...totalTimes))))
                         }
                     }
                 }
@@ -731,7 +768,39 @@ class Directive implements IDirective<IScope, JQLite, IAttributes, IController[]
                                 title: {
                                     display: true,
                                     text: ctrl.viewMode === "weekly" ? ctrl.lang.translate("screenTime.hours") : ctrl.lang.translate("screenTime.minutes"),
-                                }
+                                },
+                                ticks: {
+                                    callback: function(value: any) {
+                                        if (ctrl.viewMode === "weekly") {
+                                            // Only show integer hours (no minutes, no 'h')
+                                            const hours = Math.floor(value);
+                                            return `${hours}`;
+                                        } else {
+                                            // For daily mode, show 5-minute intervals (no 'min')
+                                            const minutes = Math.round(value);
+                                            return `${minutes}`;
+                                        }
+                                    },
+                                    // Force specific tick intervals
+                                    stepSize: ctrl.viewMode === "weekly" ? 1 : 5, // 1-hour intervals for weekly, 5-minute intervals for daily
+                                    maxTicksLimit: ctrl.viewMode === "weekly" ? 8 : 20, // More ticks allowed for daily mode
+                                    // Force Chart.js to respect our stepSize
+                                    precision: 0,
+                                    // For daily mode, generate ticks manually to ensure 5-minute intervals
+                                    ...(ctrl.viewMode === "daily" ? {
+                                        count: totalTimes.length === 0 || Math.max(...totalTimes) === 0 ? 6 : Math.ceil(Math.max(...totalTimes) / 5) + 1,
+                                        stepSize: 5
+                                    } : {}),
+                                    // For weekly mode, ensure 5 rows when no data
+                                    ...(ctrl.viewMode === "weekly" ? {
+                                        count: totalTimes.length === 0 || Math.max(...totalTimes) === 0 ? 6 : undefined
+                                    } : {})
+                                },
+                                // Ensure minimum range for small data or empty data
+                                suggestedMin: 0,
+                                suggestedMax: ctrl.viewMode === "weekly" ? 
+                                    (totalTimes.length === 0 || Math.max(...totalTimes) === 0 ? 5 : Math.max(1, Math.ceil(Math.max(...totalTimes)))) : 
+                                    (totalTimes.length === 0 || Math.max(...totalTimes) === 0 ? 25 : Math.max(5, Math.ceil(Math.max(...totalTimes))))
                             }
                         }
                     }

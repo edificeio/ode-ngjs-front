@@ -306,6 +306,7 @@
                         ng-model="ctrl.tempDailyDate"
                         ng-blur="ctrl.commitTempDate()"
                         ng-keypress="ctrl.tempDateHandleKeyPress($event)"
+                        min="{{ ctrl.schoolYearStartDate }}"
                     />
 
                     <button ng-click="ctrl.changeDay(1)" ng-disabled="!ctrl.canGoToNextDay()">→</button>
