@@ -32,7 +32,7 @@ export class ThemeHelperService {
         "edumalin-widget":      "ic-widget-edumalin",
         "mediacentre-widget":   "ic-widget-mediacentre",
         "cantine-widget":       "ic-widget-cantine",
-        "screen-time-widget":   "ic-widget-screen"
+        "screen-time-widget":   "ic-widget-screen-time"
     }
 
     constructor( 
