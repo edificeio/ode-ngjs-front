@@ -123,6 +123,16 @@
     transition: opacity 0.3s ease;
   }
 
+  .cantine-notice {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    font-size: 0.85em;
+    color: #666;
+    text-align: center;
+    font-style: italic;
+    line-height: 1.4;
+  }
+
   .cantine-arrow-button:hover {
     opacity: 1;
   }
@@ -386,6 +396,9 @@
 
             </div>
           </div>
+        </div>
+        <div class="cantine-notice">
+          <i18n>cantine.notice</i18n>
         </div>
       </div>
       <div ng-if="ctrl.menuUnavailable" class="menu-error-message">

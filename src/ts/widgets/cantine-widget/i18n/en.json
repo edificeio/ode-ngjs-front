@@ -7,6 +7,7 @@
     "cantine.dessert": "Dessert",
     "cantine.allergenes": "⚠️ Allergens",
     "cantine.selectUai": "Institution",
+    "cantine.notice": "* The information in these menus may be modified according to supplies; updates will be made accordingly",
     "cantine.error.noStructures": "No structures found for user.",
     "cantine.error.loadStructuresFailed": "Failed to load user structures.",
     "cantine.error.selectInstitution": "Please select an institution.",
