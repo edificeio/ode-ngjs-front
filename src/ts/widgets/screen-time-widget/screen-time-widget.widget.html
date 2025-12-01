@@ -188,6 +188,14 @@
         line-height: 1.8;
         padding: 1rem;
         border-radius: 6px;
+        font-weight: normal;
+    }
+
+    .info-popover.small {
+        width: 600px;
+        max-width: calc(100vw - 40px);
+        right: 0;
+        left: auto;
     }
 </style>
 
@@ -196,6 +204,23 @@
         <div class="title">
             <div class="label">
                 <i18n>screenTime.title.uppercase</i18n>
+                <popover>
+                    <popover-opener><i class="fa-solid fa-circle-info"></i></popover-opener>
+                    <popover-content class="info-popover small">
+                        <ul>
+                            <li>
+                                <i18n>screenTime.information.first</i18n>
+                            </li>
+                            <li>
+                                <i18n>screenTime.information.second</i18n>
+                            </li>
+                            <li>
+                                <i18n>screenTime.information.fourth</i18n>
+                            </li>
+                            <a href="" target="_blank">En savoir plus</a>
+                        </ul>
+                    </popover-content>
+                </popover>
             </div>
         </div>
 
@@ -255,6 +280,7 @@
                             <li>
                                 <i18n>screenTime.information.fourth</i18n>
                             </li>
+                            <a href="" target="_blank">En savoir plus</a>
                         </ul>
                     </popover-content>
                 </popover>
