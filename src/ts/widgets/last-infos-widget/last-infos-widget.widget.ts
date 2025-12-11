@@ -22,8 +22,8 @@ class Controller implements IController {
 	load():Promise<void> {
 		return this.widget.loadInfos( this.resultSize ).then( infos => {
 			this.infos = infos.map( info => {
-				(info as IExtendedLastInfosModel).relativeDate = L10n.moment(info.date).fromNow();
-				(info as IExtendedLastInfosModel).tooltip = this.lang.translate('last-infos-widget.widget.thread') + ' : ' + info.thread_title +
+				(info as IExtendedLastInfosModel).relativeDate = L10n.moment(info.modifiedDate).fromNow();
+				(info as IExtendedLastInfosModel).tooltip = this.lang.translate('last-infos-widget.widget.thread') + ' : ' + info.thread.title +
 					' | ' + this.lang.translate('last-infos-widget.widget.author') + ' : ' + info.username;
 				return info as IExtendedLastInfosModel;
 			});

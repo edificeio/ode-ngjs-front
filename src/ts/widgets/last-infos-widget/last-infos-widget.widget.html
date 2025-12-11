@@ -20,12 +20,12 @@
 		</div>
 
 		<a class="news-row"
-				ng-repeat="info in ctrl.infos track by info._id"
-				ng-href="/actualites#/view/thread/[[info.thread_id]]/info/[[info._id]]"
+				ng-repeat="info in ctrl.infos track by info.id"
+				ng-href="/actualites#/view/thread/[[info.thread.id]]/info/[[info.id]]"
 				ng-click="trackEvent($event, {detail:{'open':'info'} })">
 			<div class="news-row-image">
-				<img ng-if="!info.thread_icon" skin-src="/img/illustrations/news.svg" alt="[[info.thread_title]]" width="40" height="40" />
-				<img ng-if="info.thread_icon" ng-src="[[info.thread_icon]]?thumbnail=120x120" alt="[[info.thread_title]]" width="40" height="40" />
+				<img ng-if="!info.thread.icon" skin-src="/img/illustrations/news.svg" alt="[[info.thread.title]]" width="40" height="40" />
+				<img ng-if="info.thread.icon" ng-src="[[info.thread.icon]]?thumbnail=120x120" alt="[[info.thread.title]]" width="40" height="40" />
 			</div>
 			<div class="news-row-text">
 				<span class="link d-block">[[info.title]]</span>
