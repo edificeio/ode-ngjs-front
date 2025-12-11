@@ -1,12 +1,7 @@
 import angular, { IAttributes, IController, IDirective, IScope } from "angular";
 import { L10n, conf, notif, session, http, TrackedAction, TrackedActionFromWidget } from "../../utils";
-import { ILastInfosModel, IUserDescription, IUserInfo } from "ode-ts-client";
+import { IUserDescription, IUserInfo } from "ode-ts-client";
 import { ThemeHelperService } from "../../services";
-
-interface IExtendedLastInfosModel extends ILastInfosModel {
-	relativeDate: string;
-	tooltip: string;
-}
 
 type ContentType = {
 	title: string;	//"lateness",
