@@ -112,6 +112,11 @@ class Directive implements IDirective<Scope,JQLite,IAttributes,IController[]> {
 		};
 		scope.goToMessagerie = () => {
 			console.log(scope.messagerieLink);
+			if (scope.me?.hasWorkflow('org.entcore.auth.controllers.CarbonioPreauthController|preauth')) {
+				scope.messagerieLink = '/auth/carbonio/preauth';
+				window.open(scope.messagerieLink);
+				return;
+			}
 			// FIXME This is the old-fashioned way of accessing preferences. Do not reproduce anymore (use ode-ts-client lib instead)
 			http().get('/userbook/preference/zimbra').then( data => {
 				try{
@@ -129,12 +134,14 @@ class Directive implements IDirective<Scope,JQLite,IAttributes,IController[]> {
 			});
 		}
 		scope.refreshMails = () => {
-			if(scope.me?.hasWorkflow('fr.openent.zimbra.controllers.ZimbraController|view')){
+			if (scope.me?.hasWorkflow('org.entcore.auth.controllers.CarbonioPreauthController|preauth')) {
+				// If the user's mailbox is Carbonio, disable message count
+				return;
+			} else if(scope.me?.hasWorkflow('fr.openent.zimbra.controllers.ZimbraController|view')){
 				http().get('/zimbra/count/INBOX', {queryParams:{unread: true, _:new Date().getTime()}}).then( nbMessages => {
 					scope.nbNewMessages = nbMessages.count;
 					scope.$apply('nbNewMessages');
 				});
-	
 			} else {
 				http().get('/conversation/count/INBOX', {queryParams:{unread: true, _:new Date().getTime()}}).then( nbMessages => {
 					scope.nbNewMessages = nbMessages.count;
