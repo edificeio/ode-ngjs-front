@@ -18,6 +18,10 @@ class Controller implements IController {
   menuNotAvailableError: boolean = false;
   menuUnavailableForInstitutionError: boolean = false;
   loadMenuError: boolean = false;
+  dinnerAvailable: boolean = false;
+  currentMenuType: 'lunch' | 'dinner' = 'lunch';
+  lunchData: any = { entrees: [], plats: [], accompagnements: [], desserts: [], laitage: [] };
+  dinnerData: any = { entrees: [], plats: [], accompagnements: [], desserts: [], laitage: [] };
 
   apiDate: string;
   currentDate: string = '';
@@ -143,16 +147,49 @@ class Controller implements IController {
 
     axios.get(`/appregistry/${this.selectedUai}/cantine/menu?date=${this.apiDate}`)
       .then(response => {
-        const menu = response.data?.menu;
+        const lunchMenu = response.data?.lunchMenu;
+        this.dinnerAvailable = response.data?.dinnerAvailable === true;
+        const dinnerMenu = this.dinnerAvailable ? response.data?.dinnerMenu : null;
 
-        if (Array.isArray(menu) && menu.length > 0) {
-          this.data = {
-            entrees: menu.filter((item: any) => item.type === "entree"),
-            plats: menu.filter((item: any) => item.type === "plat"),
-            accompagnements: menu.filter((item: any) => item.type === "accompagnement"),
-            laitage: menu.filter((item: any) => item.type === "laitage"),
-            desserts: menu.filter((item: any) => item.type === "dessert"),
+        // Reset to lunch if dinner is not available
+        if (!this.dinnerAvailable) {
+          this.currentMenuType = 'lunch';
+        }
+
+        // Process lunch menu
+        if (Array.isArray(lunchMenu) && lunchMenu.length > 0) {
+          this.lunchData = {
+            entrees: lunchMenu.filter((item: any) => item.type === "entree"),
+            plats: lunchMenu.filter((item: any) => item.type === "plat"),
+            accompagnements: lunchMenu.filter((item: any) => item.type === "accompagnement"),
+            laitage: lunchMenu.filter((item: any) => item.type === "laitage"),
+            desserts: lunchMenu.filter((item: any) => item.type === "dessert"),
           };
+        } else {
+          this.lunchData = { entrees: [], plats: [], accompagnements: [], desserts: [], laitage: [] };
+        }
+
+        // Process dinner menu if available
+        if (this.dinnerAvailable && Array.isArray(dinnerMenu) && dinnerMenu.length > 0) {
+          this.dinnerData = {
+            entrees: dinnerMenu.filter((item: any) => item.type === "entree"),
+            plats: dinnerMenu.filter((item: any) => item.type === "plat"),
+            accompagnements: dinnerMenu.filter((item: any) => item.type === "accompagnement"),
+            laitage: dinnerMenu.filter((item: any) => item.type === "laitage"),
+            desserts: dinnerMenu.filter((item: any) => item.type === "dessert"),
+          };
+        } else {
+          this.dinnerData = { entrees: [], plats: [], accompagnements: [], desserts: [], laitage: [] };
+        }
+
+        // Set the current data based on menu type
+        const menuToDisplay = this.currentMenuType === 'lunch' ? this.lunchData : this.dinnerData;
+        const hasMenuItems = menuToDisplay.entrees.length > 0 || menuToDisplay.plats.length > 0 || 
+                            menuToDisplay.accompagnements.length > 0 || menuToDisplay.laitage.length > 0 || 
+                            menuToDisplay.desserts.length > 0;
+
+        if (hasMenuItems) {
+          this.data = menuToDisplay;
           this.menuUnavailable = false;
           this.error = null;
           this.selectInstitutionError = false;
@@ -188,6 +225,13 @@ class Controller implements IController {
 
         this.apply?.();
       });
+  }
+
+  switchMenuType(type: 'lunch' | 'dinner') {
+    this.currentMenuType = type;
+    // Switch data without making another API call
+    this.data = type === 'lunch' ? this.lunchData : this.dinnerData;
+    this.apply?.();
   }
 
   getAllergies(item: any): string[] {

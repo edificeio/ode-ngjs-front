@@ -5,6 +5,8 @@
     "cantine.plat": "Plat",
     "cantine.accompagnement": "Accompagnement",
     "cantine.dessert": "Dessert",
+    "cantine.lunch": "Déjeuner",
+    "cantine.dinner": "Dîner",
     "cantine.allergenes": "⚠️ Allergènes",
     "cantine.selectUai": "Établissement",
     "cantine.notice":"* Les informations figurant dans ces menus peuvent être modifiées en fonction des approvisionnements ; les mises à jour seront effectuées en conséquence",

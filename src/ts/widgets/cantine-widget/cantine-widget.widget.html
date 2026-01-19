@@ -193,16 +193,62 @@
   .cantine-yellow {
     background-color: orange;
   }
+
+  .subtitle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .cantine-menu-toggle {
+    display: flex;
+    gap: 5px;
+    margin: 0;
+  }
+
+  .cantine-menu-toggle-button {
+    padding: 4px 10px;
+    border: 1px solid #f7955c;
+    border-radius: 4px;
+    background-color: white;
+    color: #f7955c;
+    font-weight: normal;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85em;
+    white-space: nowrap;
+  }
+
+  .cantine-menu-toggle-button:hover {
+    background-color: #f7955c;
+    color: white;
+  }
+
+  .cantine-menu-toggle-button.active {
+    background-color: #f7955c;
+    color: white;
+  }
 </style>
 
 <div class="widget-dashboard">
 
   <div class="cantine-menu-card">
-
-    <h2
-      style="color:#333; font-family: 'Roboto', sans-serif; display: flex; align-items: center; justify-content: center; gap: 10px;">
+    <div class="subtitle">
       <i18n>cantine.title</i18n>
-    </h2>
+      <!-- Menu type toggle buttons (lunch/dinner) -->
+      <div ng-if="ctrl.dinnerAvailable" class="cantine-menu-toggle">
+        <button class="cantine-menu-toggle-button" 
+                ng-class="{'active': ctrl.currentMenuType === 'lunch'}"
+                ng-click="ctrl.switchMenuType('lunch')">
+          <i18n>cantine.lunch</i18n>
+        </button>
+        <button class="cantine-menu-toggle-button" 
+                ng-class="{'active': ctrl.currentMenuType === 'dinner'}"
+                ng-click="ctrl.switchMenuType('dinner')">
+          <i18n>cantine.dinner</i18n>
+        </button>
+      </div>
+    </div>
     <div class="cantine-separator"></div>
 
     <!-- Error messages for structure loading -->

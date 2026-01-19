@@ -5,6 +5,8 @@
     "cantine.plat": "Main Course",
     "cantine.accompagnement": "Side Dish",
     "cantine.dessert": "Dessert",
+    "cantine.lunch": "Lunch",
+    "cantine.dinner": "Dinner",
     "cantine.allergenes": "⚠️ Allergens",
     "cantine.selectUai": "Institution",
     "cantine.notice": "* The information in these menus may be modified according to supplies; updates will be made accordingly",
