@@ -147,7 +147,7 @@ class Controller implements IController {
 
     axios.get(`/appregistry/${this.selectedUai}/cantine/menu?date=${this.apiDate}`)
       .then(response => {
-        const lunchMenu = response.data?.lunchMenu;
+        const lunchMenu = response.data?.menu;
         this.dinnerAvailable = response.data?.dinnerAvailable === true;
         const dinnerMenu = this.dinnerAvailable ? response.data?.dinnerMenu : null;
 
