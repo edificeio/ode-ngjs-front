@@ -1,6 +1,7 @@
 import angular from "angular";
 import { SessionFrameworkFactory } from "ode-ts-client";
 import { conf } from ".";
+import { setDeviceCookies } from "./deviceDetection";
 
 /* 
  * This code bootstraps angular on the current web page.
@@ -9,6 +10,8 @@ import { conf } from ".";
  */
 (()=>{
     document.addEventListener("DOMContentLoaded", () => {
+        // detect device and set cookies
+        setDeviceCookies();
         SessionFrameworkFactory.instance().initialize()
             .then( () => conf().initialize((window as any).entcore?.deploymentTag, null) )
             .then( () => {
