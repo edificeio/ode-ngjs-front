@@ -19,6 +19,7 @@ import Mediacentre = require("../widgets/mediacentre-widget/mediacentre-widget.w
 import Cantine = require("../widgets/cantine-widget/cantine-widget.widget");
 import PtitObservatoire = require("../widgets/ptit-observatoire-widget/ptit-observatoire-widget.widget");
 import ScreenTime= require("../widgets/screen-time-widget/screen-time-widget.widget");
+import BibliocollegeWidget = require("../widgets/bibliocollege-widget/bibliocollege-widget");
 
 
 // ============ /!\ IMPORTANT /!\ ============
@@ -63,7 +64,8 @@ export enum KnownWidget {
     cantine         = "cantine-widget",
     ptitObservatoire = "ptit-observatoire-widget",
     screenTime      = "screen-time-widget",
-    bibliocollege   = "bibliocollege-widget"
+    bibliocollege   = "bibliocollege-widget",
+    eSidoc           = "e-sidoc-widget"
 };
 export type WidgetLoader = (widgetName:String)=>Promise<void>;
 
@@ -95,7 +97,7 @@ const module = angular.module("odeWidgets", [])
             case KnownWidget.ptitObservatoire: await loadPtitObservatoireWidgetModule().then( mod =>{ $injector.loadNewModules([mod]) }); break;
             case KnownWidget.screenTime: await loadScreenTimeWidgetModule().then( mod =>{ $injector.loadNewModules([mod]) }); break;
             case KnownWidget.bibliocollege: await loadBiblioCollegeWidgetModule().then( mod =>{ $injector.loadNewModules([mod]) }); break;
-
+            case KnownWidget.eSidoc: await loadESidocWidgetModule().then( mod =>{ $injector.loadNewModules([mod]) }); break;
             
             default: throw `Unknown widget "${widgetName}"`;
         }
@@ -461,7 +463,7 @@ function loadMediacentreWidgetModule() {
             )
         })
     }
-    /** Dynamically load the "Cantine" widget, which is packaged as a separate entry thanks to require.ensure(). */
+    /** Dynamically load the "screen-time-widget" widget, which is packaged as a separate entry thanks to require.ensure(). */
     function loadScreenTimeWidgetModule() {
         return new Promise<string>( (resolve, reject) => {
             // Note: the following "require.ensure" function acts as a compiling directive for webpack, and cannot be variabilized.
@@ -480,7 +482,8 @@ function loadMediacentreWidgetModule() {
         });
     }
 
-    /** Dynamically load the "Cantine" widget, which is packaged as a separate entry thanks to require.ensure(). */
+
+    /** Dynamically load the "BiblioCollege" widget, which is packaged as a separate entry thanks to require.ensure(). */
     function loadBiblioCollegeWidgetModule() {
         return new Promise<string>( (resolve, reject) => {
             // Note: the following "require.ensure" function acts as a compiling directive for webpack, and cannot be variabilized.
@@ -495,6 +498,25 @@ function loadMediacentreWidgetModule() {
                     reject();
                 },
                 "widgets/bibliocollege-widget/bibliocollege-widget.widget"
+            );
+        });
+    }
+
+    /** Dynamically load the "E-sidoc" widget, which is packaged as a separate entry thanks to require.ensure(). */
+    function loadESidocWidgetModule() {
+        return new Promise<string>( (resolve, reject) => {
+            // Note: the following "require.ensure" function acts as a compiling directive for webpack, and cannot be variabilized.
+            require.ensure(
+                ["../widgets/e-sidoc-widget/e-sidoc-widget.widget"],
+                function(require) {
+                    var jsModule = <typeof ScreenTime> require("../widgets/e-sidoc-widget/e-sidoc-widget.widget");
+                    resolve( jsModule.odeModuleName );
+                },
+                function(error) {
+                    console.log(error);
+                    reject();
+                },
+                "widgets/e-sidoc-widget/e-sidoc-widget.widget"
             );
         });
     }

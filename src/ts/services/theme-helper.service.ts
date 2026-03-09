@@ -35,7 +35,8 @@ export class ThemeHelperService {
         "screen-time-widget":   "ic-widget-screen-time",
         "evaluation-widget":    "ic-widget-evaluation",
         "ptit-observatoire-widget": "ic-widget-edumalin",
-        "bibliocollege-widget":  "ic-widget-bibliocollege"
+        "bibliocollege-widget":  "ic-widget-bibliocollege",
+        "e-sidoc-widget":        "ic-widget-e-sidoc"
     }
 
     constructor( 
