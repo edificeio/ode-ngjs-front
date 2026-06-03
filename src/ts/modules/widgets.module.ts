@@ -19,7 +19,7 @@ import Mediacentre = require("../widgets/mediacentre-widget/mediacentre-widget.w
 import Cantine = require("../widgets/cantine-widget/cantine-widget.widget");
 import PtitObservatoire = require("../widgets/ptit-observatoire-widget/ptit-observatoire-widget.widget");
 import ScreenTime= require("../widgets/screen-time-widget/screen-time-widget.widget");
-import BibliocollegeWidget = require("../widgets/bibliocollege-widget/bibliocollege-widget");
+import BibliocollegeWidget = require("../widgets/bibliocollege-widget/bibliocollege-widget.widget");
 
 
 // ============ /!\ IMPORTANT /!\ ============
