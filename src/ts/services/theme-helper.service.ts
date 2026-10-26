@@ -36,7 +36,8 @@ export class ThemeHelperService {
         "evaluation-widget":    "ic-widget-evaluation",
         "ptit-observatoire-widget": "ic-widget-edumalin",
         "bibliocollege-widget":  "ic-widget-bibliocollege",
-        "e-sidoc-widget":        "ic-widget-e-sidoc"
+        "e-sidoc-widget":        "ic-widget-e-sidoc",
+        "allo-lycee-widget":    "ic-star"         // FIXME obviously wrong => create missing icon in CSS
     }
 
     constructor( 

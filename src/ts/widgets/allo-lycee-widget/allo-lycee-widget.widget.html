@@ -1,0 +1,27 @@
+<div class="widget-allo-lycee">
+  <div class="widget-header">
+    <div class="subtitle">
+      <a class="seemore" href="/allolycee" dnd-nodrag>
+        <i18n>allo-lycee-widget.title</i18n>
+        <span class="seemore-text"><i18n>allo-lycee-widget.requests</i18n></span>
+      </a>
+    </div>
+    <div class="widget-options">
+      <div class="widget-handle" title="Déplacer le widget">
+        <i class="fas fa-grip-vertical" aria-hidden="true"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="widget-body d-flex flex-column align-items-center gap-8 px-16 pb-16" dnd-nodrag>
+    <img ng-src="[[ctrl.illustration]]" width="120" height="86" alt="" />
+    <p class="w-100 mb-0">
+      <i18n>allo-lycee-widget.description</i18n>
+      <strong><i18n>allo-lycee-widget.call.to.action</i18n></strong>
+    </p>
+    <a class="btn btn-outline-primary" href="/allolycee/new">
+      <i18n>allo-lycee-widget.new.request</i18n>
+      <i class="fas fa-arrow-right" aria-hidden="true"></i>
+    </a>
+  </div>
+</div>

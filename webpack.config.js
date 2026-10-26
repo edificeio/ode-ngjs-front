@@ -38,6 +38,8 @@ module.exports = env => ({
     rules: [
       // ts-loader will handle files with `.ts` or `.tsx` extensions
       { test: /\.tsx?$/, loader: "ts-loader" },
+      // Images required by widgets are inlined: the platform serves no assets for them.
+      { test: /\.png$/, type: "asset/inline" },
       // file-loader will handle files with `.lazy.html` extensions
       { test: /\.lazy\.html$/, loader: 'file-loader', options: {}, type: 'javascript/auto' },
       // html-loader will handle all files with `.html` but not `.lazy.html` extensions

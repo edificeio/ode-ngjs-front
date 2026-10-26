@@ -20,6 +20,7 @@ import Cantine = require("../widgets/cantine-widget/cantine-widget.widget");
 import PtitObservatoire = require("../widgets/ptit-observatoire-widget/ptit-observatoire-widget.widget");
 import ScreenTime= require("../widgets/screen-time-widget/screen-time-widget.widget");
 import BibliocollegeWidget = require("../widgets/bibliocollege-widget/bibliocollege-widget.widget");
+import AlloLycee = require("../widgets/allo-lycee-widget/allo-lycee-widget.widget");
 
 
 // ============ /!\ IMPORTANT /!\ ============
@@ -65,7 +66,9 @@ export enum KnownWidget {
     ptitObservatoire = "ptit-observatoire-widget",
     screenTime      = "screen-time-widget",
     bibliocollege   = "bibliocollege-widget",
-    eSidoc           = "e-sidoc-widget"
+    eSidoc           = "e-sidoc-widget",
+    alloLycee       = "allo-lycee-widget"
+
 };
 export type WidgetLoader = (widgetName:String)=>Promise<void>;
 
@@ -99,6 +102,7 @@ const module = angular.module("odeWidgets", [])
             case KnownWidget.bibliocollege: await loadBiblioCollegeWidgetModule().then( mod =>{ $injector.loadNewModules([mod]) }); break;
             case KnownWidget.eSidoc: await loadESidocWidgetModule().then( mod =>{ $injector.loadNewModules([mod]) }); break;
             
+            case KnownWidget.alloLycee: await loadAlloLyceeWidgetModule().then( mod =>{ $injector.loadNewModules([mod]) }); break;
             default: throw `Unknown widget "${widgetName}"`;
         }
     };
@@ -520,6 +524,25 @@ function loadMediacentreWidgetModule() {
             );
         });
     }
+
+/** Dynamically load the "allo-lycee-widget" widget, which is packaged as a separate entry thanks to require.ensure(). */
+function loadAlloLyceeWidgetModule() {
+    return new Promise<string>( (resolve, reject) => {
+        // Note: the following "require.ensure" function acts as a compiling directive for webpack, and cannot be variabilized.
+        require.ensure(
+            ["../widgets/allo-lycee-widget/allo-lycee-widget.widget"],
+            function(require) {
+                var jsModule = <typeof AlloLycee> require("../widgets/allo-lycee-widget/allo-lycee-widget.widget");
+                resolve( jsModule.odeModuleName );
+            },
+            function(error) {
+                console.log(error);
+                reject();
+            },
+            "widgets/allo-lycee-widget/allo-lycee-widget.widget"
+        );
+    });
+}
 
 /**
  * The "odeWidgets" angularjs module is a placeholder for widgets directives.
