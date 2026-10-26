@@ -1,0 +1,27 @@
+<div class="widget-allo-region">
+  <div class="widget-header">
+    <div class="subtitle">
+      <a class="seemore" href="/alloregion" dnd-nodrag>
+        <i18n>allo-region-widget.title</i18n>
+        <span class="seemore-text"><i18n>allo-region-widget.requests</i18n></span>
+      </a>
+    </div>
+    <div class="widget-options">
+      <div class="widget-handle" title="Déplacer le widget">
+        <i class="fas fa-grip-vertical" aria-hidden="true"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="widget-body d-flex flex-column align-items-center gap-8 px-16 pb-16" dnd-nodrag>
+    <img ng-src="[[ctrl.illustration]]" width="120" height="86" alt="" />
+    <p class="w-100 mb-0">
+      <i18n>allo-region-widget.description</i18n>
+      <strong><i18n>allo-region-widget.call.to.action</i18n></strong>
+    </p>
+    <a class="btn btn-outline-primary" href="/alloregion/new">
+      <i18n>allo-region-widget.new.request</i18n>
+      <i class="fas fa-arrow-right" aria-hidden="true"></i>
+    </a>
+  </div>
+</div>
