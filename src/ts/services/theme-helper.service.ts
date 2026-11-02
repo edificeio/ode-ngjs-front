@@ -168,6 +168,7 @@ export class ThemeHelperService {
 			case "admin.title": 	    appCode = "admin"; break;
             case "banques des savoirs": appCode = "banquesavoir"; break;
             case "collaborativewall":   appCode = "collaborative-wall"; break;
+            case "collect":             appCode = "rack"; break; // Collect shares the Rack pictogram
             case "communautés":         appCode = "community"; break;
 			case "directory.user":	    appCode = "userbook"; break;
             case "emploi du temps":     appCode = "edt"; break;
